@@ -17,7 +17,7 @@ async def print_events(device):
                 code = key_event.scancode
                 key = scancodes.get(code, "")
                 if code == KEY_ENTER:
-                    print(f">>> buffer")
+                    print(f">>> {buffer}")
                     buffer = ""
                 else:
                     buffer += key
