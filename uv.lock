@@ -24,22 +24,12 @@ wheels = [
 ]
 
 [[package]]
-name = "pyftpdlib"
-version = "1.5.10"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/cf/31/8d910cf40317dd0db74ba0b8558d0dee23c8b002468c14d3a5dec0e6e9fd/pyftpdlib-1.5.10.tar.gz", hash = "sha256:8dbdeb1215bcba2fb748dae31ffdb1ab008540c28d13b3704e178f368a087128", size = 204487, upload-time = "2024-06-23T14:06:17.566Z" }
-
-[[package]]
-name = "switch"
+name = "piscanner"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
-    { name = "pyftpdlib" },
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "click", specifier = "==8.1.7" },
-    { name = "pyftpdlib", specifier = "==1.5.10" },
-]
+requires-dist = [{ name = "click", specifier = "==8.1.7" }]

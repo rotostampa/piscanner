@@ -1,13 +1,11 @@
 [project]
-name = "switch"
+name = "piscanner"
 version = "0.1.0"
 description = "Add your description here"
 authors = [
-    { name = "riccardodivirgilio", email = "riccardodivirgilio@gmail.com" }
+    { name = "riccardodivirgilio", email = "riccardodivirgilio@gmail.com" },
 ]
-dependencies = [
-    "click==8.1.7",
-]
+dependencies = ["click==8.1.7"]
 readme = "README.md"
 requires-python = ">= 3.12"
 
@@ -17,9 +15,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.rye]
 managed = true
-dev-dependencies = [
-    "black>=24.4.2",
-]
-
-[tool.rye.scripts]
-switch = "python3 -m switch"
+dev-dependencies = ["black>=24.4.2"]

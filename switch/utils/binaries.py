@@ -1,6 +1,0 @@
-SHELL = "/bin/zsh"
-CURL = "/usr/bin/curl"
-OSASCRIPT = "/usr/bin/osascript"
-AWSCLI = "/opt/homebrew/bin/aws"
-MAGICK = "/opt/homebrew/bin/magick"
-SCREEN = "/opt/homebrew/bin/screen"

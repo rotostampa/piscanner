@@ -11,3 +11,4 @@ dist/.DS_Store
 /switch.egg-info
 /dist
 /build
+/piscanner.egg-info
