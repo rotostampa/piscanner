@@ -2,23 +2,24 @@ import asyncio, evdev, click
 
 from evdev.ecodes import ecodes
 
-EV_KEY = ecodes['EV_KEY']
-KEY_ENTER = ecodes['KEY_ENTER']
-KEY_LEFTSHIFT = ecodes['KEY_LEFTSHIFT']
-KEY_RIGHTSHIFT = ecodes['KEY_RIGHTSHIFT']
+EV_KEY = ecodes["EV_KEY"]
+KEY_ENTER = ecodes["KEY_ENTER"]
+KEY_LEFTSHIFT = ecodes["KEY_LEFTSHIFT"]
+KEY_RIGHTSHIFT = ecodes["KEY_RIGHTSHIFT"]
+
 
 async def print_events(device):
 
     scancodes = dict(codes())
     shifted_scancodes = dict(shifted_codes())
-    buffer = ''
+    buffer = ""
     shift_pressed = False
 
-    print('Listening on', device.path, device.name)
-    print('KEY_ENTER: {} EV_KEY: {}'.format(KEY_ENTER, EV_KEY))
-    print('Scancodes', scancodes)
-    print('Shifted scancodes', shifted_scancodes)
-    print('-' * 20)
+    print("Listening on", device.path, device.name)
+    print("KEY_ENTER: {} EV_KEY: {}".format(KEY_ENTER, EV_KEY))
+    print("Scancodes", scancodes)
+    print("Shifted scancodes", shifted_scancodes)
+    print("-" * 20)
 
     async for event in device.async_read_loop():
         if event.type == EV_KEY:
@@ -27,13 +28,13 @@ async def print_events(device):
 
             # Handle shift key state
             if code in [KEY_LEFTSHIFT, KEY_RIGHTSHIFT]:
-                shift_pressed = (key_event.keystate == key_event.key_down)
+                shift_pressed = key_event.keystate == key_event.key_down
                 print(f'SHIFT {"PRESSED" if shift_pressed else "RELEASED"}')
                 continue
 
             # Only process key down events for other keys
             if key_event.keystate == key_event.key_down:
-                print('GOT CODE', code, 'SHIFT:', shift_pressed)
+                print("GOT CODE", code, "SHIFT:", shift_pressed)
 
                 if code == KEY_ENTER:
                     if buffer:  # Only print if there's content
@@ -53,27 +54,27 @@ async def print_events(device):
 
 def codes():
     # Letters (lowercase)
-    for c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
-        yield ecodes[f'KEY_{c}'], c.lower()
+    for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        yield ecodes[f"KEY_{c}"], c.lower()
 
     # Numbers
-    for c in '0123456789':
-        yield ecodes[f'KEY_{c}'], c
+    for c in "0123456789":
+        yield ecodes[f"KEY_{c}"], c
 
     # Common punctuation that might appear in barcodes
     punctuation_map = {
-        'KEY_SPACE': ' ',
-        'KEY_MINUS': '-',
-        'KEY_EQUAL': '=',
-        'KEY_LEFTBRACE': '[',
-        'KEY_RIGHTBRACE': ']',
-        'KEY_SEMICOLON': ';',
-        'KEY_APOSTROPHE': "'",
-        'KEY_GRAVE': '`',
-        'KEY_BACKSLASH': '\\',
-        'KEY_COMMA': ',',
-        'KEY_DOT': '.',
-        'KEY_SLASH': '/',
+        "KEY_SPACE": " ",
+        "KEY_MINUS": "-",
+        "KEY_EQUAL": "=",
+        "KEY_LEFTBRACE": "[",
+        "KEY_RIGHTBRACE": "]",
+        "KEY_SEMICOLON": ";",
+        "KEY_APOSTROPHE": "'",
+        "KEY_GRAVE": "`",
+        "KEY_BACKSLASH": "\\",
+        "KEY_COMMA": ",",
+        "KEY_DOT": ".",
+        "KEY_SLASH": "/",
     }
 
     for key_name, char in punctuation_map.items():
@@ -83,21 +84,21 @@ def codes():
 
 def shifted_codes():
     # Letters (uppercase when shifted)
-    for c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
-        yield ecodes[f'KEY_{c}'], c.upper()
+    for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        yield ecodes[f"KEY_{c}"], c.upper()
 
     # Numbers become symbols when shifted
     number_symbols = {
-        'KEY_1': '!',
-        'KEY_2': '@',
-        'KEY_3': '#',
-        'KEY_4': '$',
-        'KEY_5': '%',
-        'KEY_6': '^',
-        'KEY_7': '&',
-        'KEY_8': '*',
-        'KEY_9': '(',
-        'KEY_0': ')',
+        "KEY_1": "!",
+        "KEY_2": "@",
+        "KEY_3": "#",
+        "KEY_4": "$",
+        "KEY_5": "%",
+        "KEY_6": "^",
+        "KEY_7": "&",
+        "KEY_8": "*",
+        "KEY_9": "(",
+        "KEY_0": ")",
     }
 
     for key_name, symbol in number_symbols.items():
@@ -105,17 +106,17 @@ def shifted_codes():
 
     # Punctuation symbols when shifted
     shifted_punctuation = {
-        'KEY_MINUS': '_',
-        'KEY_EQUAL': '+',
-        'KEY_LEFTBRACE': '{',
-        'KEY_RIGHTBRACE': '}',
-        'KEY_SEMICOLON': ':',
-        'KEY_APOSTROPHE': '"',
-        'KEY_GRAVE': '~',
-        'KEY_BACKSLASH': '|',
-        'KEY_COMMA': '<',
-        'KEY_DOT': '>',
-        'KEY_SLASH': '?',
+        "KEY_MINUS": "_",
+        "KEY_EQUAL": "+",
+        "KEY_LEFTBRACE": "{",
+        "KEY_RIGHTBRACE": "}",
+        "KEY_SEMICOLON": ":",
+        "KEY_APOSTROPHE": '"',
+        "KEY_GRAVE": "~",
+        "KEY_BACKSLASH": "|",
+        "KEY_COMMA": "<",
+        "KEY_DOT": ">",
+        "KEY_SLASH": "?",
     }
 
     for key_name, char in shifted_punctuation.items():
