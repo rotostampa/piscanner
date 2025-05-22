@@ -8,16 +8,16 @@ async def print_events(device):
     buffer = ''
 
     async for event in device.async_read_loop():
-
-        key_event = evdev.categorize(event)
-        if key_event.keystate == key_event.key_down:
-            code = key_event.scancode
-            key = scancodes.get(code, "")
-            if code == ecodes['KEY_ENTER']:
-                print(f">>> buffer")
-                buffer = ""
-            else:
-                buffer += key
+        if event.type == ecodes.EV_KEY:
+            key_event = evdev.categorize(event)
+            if key_event.keystate == key_event.key_down:
+                code = key_event.scancode
+                key = scancodes.get(code, "")
+                if code == ecodes['KEY_ENTER']:
+                    print(f">>> buffer")
+                    buffer = ""
+                else:
+                    buffer += key
 
 
 def codes():
