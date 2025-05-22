@@ -10,8 +10,8 @@ def cli(ctx):
 
 
 for module, cmd in (
-    ("switch.cli.listener", "listen_for_barcodes"),
-    ("switch.cli.noop", "wait"),
+    ("piscanner.cli.listener", "listen"),
+    ("piscanner.cli.noop", "wait"),
 ):
     cli.add_command(getattr(import_module(module), cmd))
 

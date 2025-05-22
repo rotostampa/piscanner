@@ -1,6 +1,5 @@
 import click
 
-
 @click.command(help="Listen for barcode scanner")
-def exec(files, unique, copy):
-    raise NotImplementedError
+def listen():
+    print('to be implemented')
