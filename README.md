@@ -14,3 +14,7 @@ brew install uv
 ## format the code
 
 ```uv run --isolated --no-project --with black black .```
+
+## fixes
+
+```uv run --isolated --no-project --with ruff ruff check --fix --unsafe-fixes .```
