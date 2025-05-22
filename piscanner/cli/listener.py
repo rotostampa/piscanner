@@ -11,6 +11,7 @@ async def print_events(device):
     buffer = ''
 
     print('Listening on', device.path)
+    print('KEY_ENTER: {} EV_KEY: {}'.format(KEY_ENTER, EV_KEY))
     print('Scancodes', scancodes)
     print('-' * 20)
 
