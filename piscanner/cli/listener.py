@@ -9,7 +9,7 @@ def find_barcode_device():
     devices = [InputDevice(path) for path in evdev.list_devices()]
     for device in devices:
         name = device.name.lower()
-        print('found', name, device)
+        print('found {}/{}'.format(name, device))
         if 'barcode' in name or 'scanner' in name:
             print(f"Found barcode reader: {device.name} at {device.path}")
             return device
