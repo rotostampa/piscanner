@@ -10,17 +10,21 @@ async def print_events(device):
     scancodes = dict(codes())
     buffer = ''
 
+    print('Listening on', device.path)
+    print('Scancodes', scancodes)
+    print('-' * 20)
+
     async for event in device.async_read_loop():
         if event.type == EV_KEY:
             key_event = evdev.categorize(event)
             if key_event.keystate == key_event.key_down:
                 code = key_event.scancode
-                key = scancodes.get(code, "")
+                print('GOT CODE', code)
                 if code == KEY_ENTER:
                     print(f">>> {buffer}")
                     buffer = ""
                 else:
-                    buffer += key
+                    buffer += scancodes.get(code, "")
 
 
 def codes():
@@ -36,7 +40,6 @@ def listen():
     assert len(devices) > 0, "No devices found"
 
     for device in devices:
-        print('Listening on', device.path)
         asyncio.ensure_future(print_events(device))
 
     loop = asyncio.get_event_loop()
