@@ -13,6 +13,7 @@ def listen():
     assert len(devices) > 0, "No devices found"
 
     for device in devices:
+        print('Listening on', device.path)
         asyncio.ensure_future(print_events(device))
 
     loop = asyncio.get_event_loop()
