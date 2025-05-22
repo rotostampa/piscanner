@@ -30,7 +30,7 @@ async def print_events(device):
 
 def codes():
     for c in '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ':
-        yield c, ecodes['KEY_{}'.format(c)]
+        yield ecodes['KEY_{}'.format(c)], c
 
 @click.command(help="Listen for barcode scanner")
 def listen():
