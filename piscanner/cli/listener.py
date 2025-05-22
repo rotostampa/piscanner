@@ -1,4 +1,6 @@
-import asyncio, evdev, click
+import asyncio
+import evdev
+import click
 
 from evdev.ecodes import ecodes
 
