@@ -2,18 +2,21 @@ import asyncio, evdev, click
 
 from evdev.ecodes import ecodes
 
+EV_KEY = ecodes['EV_KEY']
+KEY_ENTER = ecodes['KEY_ENTER']
+
 async def print_events(device):
 
     scancodes = dict(codes())
     buffer = ''
 
     async for event in device.async_read_loop():
-        if event.type == ecodes.EV_KEY:
+        if event.type == EV_KEY:
             key_event = evdev.categorize(event)
             if key_event.keystate == key_event.key_down:
                 code = key_event.scancode
                 key = scancodes.get(code, "")
-                if code == ecodes['KEY_ENTER']:
+                if code == KEY_ENTER:
                     print(f">>> buffer")
                     buffer = ""
                 else:
