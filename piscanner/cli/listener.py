@@ -3,8 +3,22 @@ import asyncio, evdev, click
 from evdev.ecodes import ecodes
 
 async def print_events(device):
+
+    scancodes = dict(codes())
+    buffer = ''
+
     async for event in device.async_read_loop():
-        print(device.path, evdev.categorize(event), sep=': ')
+
+        key_event = evdev.categorize(event)
+        if key_event.keystate == key_event.key_down:
+            code = key_event.scancode
+            key = scancodes.get(code, "")
+            if code == ecodes['KEY_ENTER']:
+                print(f">>> buffer")
+                buffer = ""
+            else:
+                buffer += key
+
 
 def codes():
     for c in '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ':
@@ -14,6 +28,7 @@ def codes():
 def listen():
 
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+
 
     assert len(devices) > 0, "No devices found"
 
