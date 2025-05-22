@@ -18,13 +18,14 @@ async def print_events(device):
     buffer = ""
     shift_pressed = False
 
-    print(f"Listening on {device.name} at {device.path}, VID={device.info.vendor}, PID={device.info.product}, Serial={device.uniq}")
+    print(
+        f"Listening on {device.name} at {device.path}, VID={device.info.vendor}, PID={device.info.product}, Serial={device.uniq}"
+    )
 
-
-    #print("KEY_ENTER: {} EV_KEY: {}".format(KEY_ENTER, EV_KEY))
-    #print("Scancodes", scancodes)
-    #print("Shifted scancodes", shifted_scancodes)
-    #print("-" * 20)
+    # print("KEY_ENTER: {} EV_KEY: {}".format(KEY_ENTER, EV_KEY))
+    # print("Scancodes", scancodes)
+    # print("Shifted scancodes", shifted_scancodes)
+    # print("-" * 20)
 
     async for event in device.async_read_loop():
         if event.type == EV_KEY:
@@ -34,12 +35,12 @@ async def print_events(device):
             # Handle shift key state
             if code in [KEY_LEFTSHIFT, KEY_RIGHTSHIFT]:
                 shift_pressed = key_event.keystate == key_event.key_down
-                #print(f'SHIFT {"PRESSED" if shift_pressed else "RELEASED"}')
+                # print(f'SHIFT {"PRESSED" if shift_pressed else "RELEASED"}')
                 continue
 
             # Only process key down events for other keys
             if key_event.keystate == key_event.key_down:
-                #print("GOT CODE", code, "SHIFT:", shift_pressed)
+                # print("GOT CODE", code, "SHIFT:", shift_pressed)
 
                 if code == KEY_ENTER:
                     if buffer:  # Only print if there's content
