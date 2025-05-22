@@ -17,7 +17,9 @@ async def print_events(device):
     buffer = ""
     shift_pressed = False
 
-    print("Listening on", device.path, device.name)
+    print(f"Listening on {device.name} at {device.path}, VID={device.info.vendor}, PID={device.info.product}, Serial={device.uniq}")
+
+
     #print("KEY_ENTER: {} EV_KEY: {}".format(KEY_ENTER, EV_KEY))
     #print("Scancodes", scancodes)
     #print("Shifted scancodes", shifted_scancodes)
