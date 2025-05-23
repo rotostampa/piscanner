@@ -3,11 +3,12 @@ import time
 import asyncio
 
 import os
+import uuid
 
 db_lock = asyncio.Lock()
 
 
-DB_FILE = os.path.join(os.path.expanduser("~"), "piscanner-v1.db")
+DB_FILE = os.path.join(os.path.expanduser("~"), "piscanner-v2.db")
 
 
 async def init():
@@ -16,12 +17,12 @@ async def init():
             await db.execute(
                 """
                 CREATE TABLE IF NOT EXISTS barcodes (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    barcode TEXT,
-                    create_timestamp REAL,
+                    id INTEGER NOT NULL,
+                    barcode TEXT NOT NULL,
+                    create_timestamp REAL NOT NULL,
                     uploaded_timestamp REAL
                 )
-            """
+                """
             )
             await db.commit()
 
@@ -30,8 +31,8 @@ async def insert_barcode(barcode: str):
     async with db_lock:
         async with aiosqlite.connect(DB_FILE) as db:
             await db.execute(
-                "INSERT INTO barcodes (barcode, create_timestamp, uploaded_timestamp) VALUES (?, ?, ?)",
-                (barcode, time.time(), None),
+                "INSERT INTO barcodes (id, barcode, create_timestamp) VALUES (?, ?, ?)",
+                (uuid.uuid4().int, barcode, time.time()),
             )
             await db.commit()
 
