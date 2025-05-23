@@ -53,10 +53,10 @@ async def handle_client(reader, writer):
             + "".join(f"<td>{col if col is not None else 'None'}</td>" for col in row)
             + "</tr>\n"
         )
-        await write_chunk(row_html.encode())
+        await write_chunk(row_html)
 
     # Write closing tags
-    await write_chunk(b"</tbody></table></main></body></html>")
+    await write_chunk("</tbody></table></main></body></html>")
 
     # Last chunk
     writer.write(b"0\r\n\r\n")
