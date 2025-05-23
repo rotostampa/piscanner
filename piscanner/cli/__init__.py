@@ -1,9 +1,10 @@
 from importlib import import_module
 
-import click
+import click, sys
 
 print('starting click')
 
+sys.stdout.flush()
 
 @click.group()
 @click.pass_context
