@@ -1,6 +1,6 @@
 import asyncio
 from piscanner.utils.storage import read
-from piscanner.utils.machine import get_machine_uuid
+from piscanner.utils.machine import get_hostname
 
 
 async def handle_client(reader, writer):
@@ -44,7 +44,7 @@ async def handle_client(reader, writer):
     </thead>
     <tbody>
 """.format(
-            uuid=get_machine_uuid()
+            uuid=get_hostname()
         )
     )
 
@@ -76,7 +76,7 @@ async def handle_client(reader, writer):
 
 async def start_server(port):
     server = await asyncio.start_server(handle_client, "0.0.0.0", port)
-    print("Serving on http://{}:{}...".format(get_machine_uuid(), port))
+    print("Serving on http://{}:{}...".format(get_hostname(), port))
     async with server:
         await server.serve_forever()
 

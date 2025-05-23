@@ -3,7 +3,7 @@ import warnings
 import sys
 
 from evdev.ecodes import ecodes
-from piscanner.utils.machine import get_machine_uuid
+from piscanner.utils.machine import get_hostname
 from piscanner.utils.storage import insert_barcode
 from asyncio.tasks import ensure_future
 
@@ -132,7 +132,7 @@ def shifted_codes():
 
 def listener_coroutines():
 
-    print("Starting on machine {}".format(get_machine_uuid()))
+    print("Starting on machine {}".format(get_hostname()))
 
     sys.stdout.flush()
 
