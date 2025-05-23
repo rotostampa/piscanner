@@ -49,8 +49,7 @@ async def handle_client(reader, writer):
     )
 
     # Stream rows one by one
-    rows = await read()
-    for row in rows:
+    async for row in read():
         await write_chunk(
         """
             <tr>
