@@ -2,12 +2,17 @@ import aiosqlite
 import time
 import datetime
 import asyncio
-
+from piscanner.utils.machine import is_mac
 import os
 
 db_lock = asyncio.Lock()
 
-DB_FILE = os.path.join(os.path.expanduser("~"), "piscanner-v4.db")
+DB_FILE = "piscanner-v5.db"
+
+if is_mac:
+    DB_FILE = os.path.join(os.path.dirname(__file__), DB_FILE)
+else:
+    DB_FILE = os.path.join(os.path.expanduser("~"), DB_FILE)
 
 
 def time_to_date(t):
