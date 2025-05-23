@@ -1,6 +1,6 @@
 import asyncio
 from piscanner.utils.storage import read
-from piscanner.utils.machine import get_machine_uuid
+from piscanner.utils.machine import get_machine_uuid, is_mac
 
 
 async def handle_client(reader, writer):
@@ -81,5 +81,5 @@ async def start_server(port):
         await server.serve_forever()
 
 
-def server_coroutines(port=9800):
+def server_coroutines(port=is_mac and 9800 or 80):
     yield start_server, (), {"port": port}

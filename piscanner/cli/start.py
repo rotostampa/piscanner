@@ -3,10 +3,8 @@ import traceback
 import asyncio
 import click
 from piscanner.utils.storage import init
-import platform
 import warnings
-
-is_mac = platform.system() != "Darwin"
+from piscanner.utils.machine import is_mac
 
 
 def yield_coroutines():
