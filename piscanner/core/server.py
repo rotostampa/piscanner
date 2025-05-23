@@ -30,11 +30,12 @@ async def handle_client(reader, writer):
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Barcodes {uuid}</title>
+    <title>{uuid}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
 </head>
 <body class="container flow">
-  <h1 class="text-center">Barcodes</h1>
+  <br/>
+  <h1 class="text-center">{uuid}</h1>
   <table>
     <thead>
       <tr>
