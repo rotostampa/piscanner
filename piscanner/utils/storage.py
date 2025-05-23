@@ -10,8 +10,6 @@ db_lock = asyncio.Lock()
 DB_FILE = os.path.join(os.path.expanduser("~"), "piscanner-v1.db")
 
 
-
-
 async def init():
     async with db_lock:
         async with aiosqlite.connect(DB_FILE) as db:
