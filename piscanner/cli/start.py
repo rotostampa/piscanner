@@ -7,7 +7,7 @@ from piscanner.utils.storage import read, init
 
 def yield_coroutines():
     for module, cmd in (
-        ("piscanner.core.listener", "listener_coroutines"),
+        #("piscanner.core.listener", "listener_coroutines"),
         ("piscanner.core.server", "server_coroutines"),
     ):
 
@@ -26,14 +26,17 @@ async def restart_on_failure(coroutine_func, *args, **kwargs):
             await asyncio.sleep(1)
 
 
-@click.command(help="Listen for barcode scanner")
-def start():
-
+async def main():
     print('init db')
-    asyncio.run(init())
+    await init()
 
     for coroutine, args, opts in yield_coroutines():
-        asyncio.ensure_future(restart_on_failure(coroutine, *args, **opts))
+        asyncio.create_task(restart_on_failure(coroutine, *args, **opts))
 
-    loop = asyncio.get_event_loop()
-    loop.run_forever()
+    # Run forever
+    await asyncio.Event().wait()
+
+
+@click.command(help="Listen for barcode scanner")
+def start():
+    asyncio.run(main())
