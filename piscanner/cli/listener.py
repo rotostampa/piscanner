@@ -1,6 +1,7 @@
 import asyncio
 import evdev
 import click
+import warnings
 
 from evdev.ecodes import ecodes
 from piscanner.utils.machine import get_machine_uuid
@@ -132,7 +133,8 @@ def listen():
 
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 
-    assert len(devices) > 0, "No devices found"
+    if len(devices) == 0:
+        warnings.warn('No devices found')
 
     for device in devices:
         asyncio.ensure_future(print_events(device))
