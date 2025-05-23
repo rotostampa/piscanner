@@ -26,7 +26,10 @@ async def handle_client(reader, writer):
     # Write the first chunk: HTML header + table header
     await write_chunk(
         b"""<!DOCTYPE html>
-<html><head><title>Barcodes</title></head><body>
+<html>
+<head>
+    <title>Barcodes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"></head><body>
 <h1>Barcodes</h1>
 <table border="1"><thead><tr><th>ID</th><th>Barcode</th><th>Create Timestamp</th><th>Uploaded Timestamp</th></tr></thead><tbody>
 """
