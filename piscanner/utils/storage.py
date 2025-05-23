@@ -32,7 +32,7 @@ async def insert_barcode(barcode: str):
 async def read():
     async with aiosqlite.connect(DB_FILE) as db:
         cursor = await db.execute(
-            "SELECT id, barcode, create_timestamp, uploaded_timestamp FROM barcodes"
+            "SELECT id, barcode, create_timestamp, uploaded_timestamp FROM barcodes ORDER BY create_timestamp DESC"
         )
         rows = await cursor.fetchall()
         return rows
