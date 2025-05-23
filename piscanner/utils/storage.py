@@ -2,7 +2,7 @@ import aiosqlite
 import time
 from pathlib import Path
 
-DB_FILE = Path(__file__).parent / "barcodes.db"
+DB_FILE = Path(__file__).parent.parent / "barcodes.db"
 
 
 async def init():
