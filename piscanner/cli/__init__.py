@@ -1,6 +1,6 @@
 from importlib import import_module
 
-import click, sys
+import click
 
 @click.group()
 @click.pass_context
