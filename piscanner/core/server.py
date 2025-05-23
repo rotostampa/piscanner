@@ -1,6 +1,6 @@
 import asyncio
 from piscanner.utils.storage import read
-from piscanner.utils.machine import get_machine_uuid, is_mac
+from piscanner.utils.machine import get_machine_uuid
 
 
 async def handle_client(reader, writer):
