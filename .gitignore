@@ -13,3 +13,4 @@ dist/.DS_Store
 /build
 /piscanner.egg-info
 piscanner/barcodes.db
+*.db
