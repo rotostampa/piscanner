@@ -6,53 +6,56 @@ from piscanner.utils.storage import read
 # from your_module import read
 
 
+# HTML handler with streaming
 async def handle(request):
-    rows = await read()
+    response = web.StreamResponse(status=200, reason='OK', headers={'Content-Type': 'text/html'})
+    await response.prepare(request)
 
-    # Build HTML rows for the table
-    table_rows = ""
+    await response.write(b"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Barcodes</title>
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css" />
+</head>
+<body>
+<main class="container">
+    <h1>Barcodes</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Barcode</th>
+                <th>Create Timestamp</th>
+                <th>Uploaded Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+""")
+
+    rows = await read()
     for row in rows:
-        # row = (id, barcode, create_timestamp, uploaded_timestamp)
         id_, barcode, create_ts, uploaded_ts = row
         uploaded_ts_str = str(uploaded_ts) if uploaded_ts is not None else "None"
-        table_rows += f"""
-        <tr>
-            <td>{id_}</td>
-            <td>{barcode}</td>
-            <td>{create_ts}</td>
-            <td>{uploaded_ts_str}</td>
-        </tr>
+        row_html = f"""
+            <tr>
+                <td>{id_}</td>
+                <td>{barcode}</td>
+                <td>{create_ts}</td>
+                <td>{uploaded_ts_str}</td>
+            </tr>
         """
+        await response.write(row_html.encode())
 
-    html = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Barcodes</title>
-        <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css" />
-    </head>
-    <body>
-        <main class="container">
-            <h1>Barcodes</h1>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Barcode</th>
-                        <th>Create Timestamp</th>
-                        <th>Uploaded Timestamp</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {table_rows}
-                </tbody>
-            </table>
-        </main>
-    </body>
-    </html>
-    """
-    return web.Response(text=html, content_type="text/html")
+    await response.write(b"""
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
+""")
+    await response.write_eof()
+    return response
 
 
 async def start_server(port = 9800):
