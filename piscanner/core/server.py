@@ -76,7 +76,7 @@ async def handle_client(reader, writer):
 
 async def start_server(port):
     server = await asyncio.start_server(handle_client, "0.0.0.0", port)
-    print("Serving on port {}...".format(port))
+    print("Serving on http://{}:{}...".format(get_machine_uuid(), port))
     async with server:
         await server.serve_forever()
 

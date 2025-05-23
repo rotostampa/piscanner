@@ -12,6 +12,7 @@ def cli(ctx):
 for module, cmd in (
     ("piscanner.cli.start", "start"),
     ("piscanner.cli.noop", "noop"),
+    ("piscanner.cli.populate", "populate"),
 ):
     cli.add_command(getattr(import_module(module), cmd))
 
