@@ -9,8 +9,8 @@ def cli(ctx):
 
 
 for module, cmd in (
-    ("piscanner.cli.listener", "listen"),
-    ("piscanner.cli.noop", "wait"),
+    ("piscanner.cli.start", "start"),
+    ("piscanner.cli.noop", "noop"),
 ):
     cli.add_command(getattr(import_module(module), cmd))
 

@@ -5,7 +5,7 @@ import warnings
 import sys
 
 from evdev.ecodes import ecodes
-from piscanner.utils.machine import get_machine_uuid
+from piscanner.core.machine import get_machine_uuid
 
 EV_KEY = ecodes["EV_KEY"]
 KEY_ENTER = ecodes["KEY_ENTER"]
@@ -131,7 +131,7 @@ def shifted_codes():
 
 
 @click.command(help="Listen for barcode scanner")
-def listen():
+def start():
 
     print("Starting on machine {}".format(get_machine_uuid()))
 
