@@ -2,8 +2,8 @@ import asyncio
 import evdev
 import click
 import warnings
+import traceback
 import sys
-from functools import partial
 
 from evdev.ecodes import ecodes
 from piscanner.core.machine import get_machine_uuid
@@ -124,6 +124,16 @@ def shifted_codes():
             yield ecodes[key_name], char
 
 
+async def restart_on_failure(coroutine_func, *args, **kwargs):
+    while True:
+        try:
+            await coroutine_func(*args, **kwargs)
+        except Exception:
+            print(f"Coroutine {coroutine_func} failed with exception:")
+            traceback.print_exc()  # prints traceback to stderr by default
+            await asyncio.sleep(1)
+
+
 def yield_coroutines():
 
     print("Starting on machine {}".format(get_machine_uuid()))
@@ -133,17 +143,17 @@ def yield_coroutines():
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 
     if len(devices) == 0:
-        warnings.warn('No devices found')
+        warnings.warn("No devices found")
 
     for device in devices:
-        yield partial(print_events, device)
+        yield print_events, (), {"device": device}
 
 
 @click.command(help="Listen for barcode scanner")
 def start():
 
-    for coroutine in yield_coroutines():
-        asyncio.ensure_future(coroutine())
+    for coroutine, args, opts in yield_coroutines():
+        asyncio.ensure_future(restart_on_failure(coroutine, *args, **opts))
 
     loop = asyncio.get_event_loop()
     loop.run_forever()
