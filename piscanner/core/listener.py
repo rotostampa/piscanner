@@ -9,7 +9,7 @@ from asyncio.tasks import ensure_future
 
 
 
-BARCODE_TERMINATOR = ecodes["KEY_ENTER"]
+BARCODE_TERMINATOR = ecodes["KEY_DOT"]
 
 EV_KEY = ecodes["EV_KEY"]
 KEY_LEFTSHIFT = ecodes["KEY_LEFTSHIFT"]
