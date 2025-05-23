@@ -12,11 +12,11 @@ DB_FILE = os.path.join(os.path.expanduser("~"), "piscanner-v4.db")
 
 def time_to_date(t):
     if t:
-        return datetime.datetime.fromtimestamp(t / 10000)
+        return datetime.datetime.fromtimestamp(t / 1000000)
 
 
 def timestamp():
-    return time.time() * 10000
+    return time.time() * 1000000
 
 
 async def init():
