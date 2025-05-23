@@ -47,7 +47,8 @@ async def print_events(device):
 
                 if code == BARCODE_TERMINATOR:
                     if buffer:  # Only print if there's content
-                        await insert_barcode(buffer.strip())
+                        print(buffer.strip())
+                        #await insert_barcode(buffer.strip())
                     buffer = ""
                 else:
                     # Choose character based on shift state
