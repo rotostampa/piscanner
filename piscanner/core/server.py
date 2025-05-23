@@ -1,26 +1,49 @@
 import asyncio
-
-HTML = b"""\
-HTTP/1.1 200 OK
-Content-Type: text/html; charset=utf-8
-Content-Length: 92
-
-<!DOCTYPE html>
-<html>
-<head><title>Static Page</title></head>
-<body><h1>Hello, this is a static HTML response!</h1></body>
-</html>
-"""
+from piscanner.utils.storage import read  # async read function imported
 
 async def handle_client(reader, writer):
-    # Read whatever client sends (you can limit or ignore this)
-    await reader.read(1024)  # read up to 1024 bytes (ignore content)
+    # Read and ignore client request
+    await reader.read(1024)
 
-    # Write the static HTTP response
-    writer.write(HTML)
+    # Write response headers
+    headers = (
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html; charset=utf-8\r\n"
+        "Transfer-Encoding: chunked\r\n"  # use chunked for streaming
+        "\r\n"
+    )
+    writer.write(headers.encode())
     await writer.drain()
 
-    # Close connection
+    async def write_chunk(data: bytes):
+        # Write chunk size in hex + CRLF
+        writer.write(f"{len(data):X}\r\n".encode())
+        writer.write(data)
+        writer.write(b"\r\n")
+        await writer.drain()
+
+    # Write the first chunk: HTML header + table header
+    await write_chunk(b"""<!DOCTYPE html>
+<html><head><title>Barcodes</title></head><body>
+<h1>Barcodes</h1>
+<table border="1"><thead><tr><th>ID</th><th>Barcode</th><th>Create Timestamp</th><th>Uploaded Timestamp</th></tr></thead><tbody>
+""")
+
+    # Stream rows one by one
+    rows = await read()
+    for row in rows:
+        row_html = "<tr>" + "".join(
+            f"<td>{col if col is not None else 'None'}</td>" for col in row
+        ) + "</tr>\n"
+        await write_chunk(row_html.encode())
+
+    # Write closing tags
+    await write_chunk(b"</tbody></table></body></html>")
+
+    # Write last chunk (zero length) to indicate end of chunks
+    writer.write(b"0\r\n\r\n")
+    await writer.drain()
+
     writer.close()
     await writer.wait_closed()
 
