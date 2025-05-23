@@ -5,7 +5,11 @@ import click
 
 
 def yield_coroutines():
-    for module, cmd in (("piscanner.core.listener", "listener_coroutines"),):
+    for module, cmd in (
+        ("piscanner.core.listener", "listener_coroutines"),
+        ("piscanner.core.start", "start_app"),
+    ):
+
         func = getattr(import_module(module), cmd)
 
         yield from func()
