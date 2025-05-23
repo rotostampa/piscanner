@@ -32,32 +32,16 @@ async def handle_client(reader, writer):
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Barcodes {uuid}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-    <style>
-      body {
-        display: flex;
-        justify-content: center;
-        padding: 2rem;
-      }
-      main.container {
-        max-width: 800px;
-        width: 100%;
-      }
-      table {
-        margin-top: 1rem;
-        width: 100%;
-      }
-    </style>
 </head>
-<body>
-  <main class="container">
-    <h1 style="text-align:center;">Barcodes</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th><th>Barcode</th><th>Create Timestamp</th><th>Uploaded Timestamp</th>
-        </tr>
-      </thead>
-      <tbody>
+<body class="container flow">
+  <h1 class="text-center">Barcodes</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Barcode</th><th>Create Timestamp</th><th>Uploaded Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
 """.format(uuid = get_machine_uuid())
     )
 
