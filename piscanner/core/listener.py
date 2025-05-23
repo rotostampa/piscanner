@@ -4,6 +4,7 @@ import sys
 
 from evdev.ecodes import ecodes
 from piscanner.utils.machine import get_machine_uuid
+from piscanner.utils.storage import insert_barcode
 
 EV_KEY = ecodes["EV_KEY"]
 KEY_LEFTSHIFT = ecodes["KEY_LEFTSHIFT"]
@@ -41,6 +42,8 @@ async def print_events(device):
                     if buffer:
                         print(buffer.strip())
                         sys.stdout.flush()
+
+                        await insert_barcode(buffer.strip())
                     buffer = ""
                 else:
                     # Choose character based on shift state
