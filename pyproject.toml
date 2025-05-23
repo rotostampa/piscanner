@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = ["click==8.2.1", "evdev==1.9.2"]
 readme = "README.md"
-requires-python = ">= 3.12"
+requires-python = ">=3.11"
 
 [build-system]
 requires = ["setuptools", "wheel"]
