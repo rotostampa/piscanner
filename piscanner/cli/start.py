@@ -3,6 +3,7 @@ import evdev
 import click
 import warnings
 import sys
+from functools import partial
 
 from evdev.ecodes import ecodes
 from piscanner.core.machine import get_machine_uuid
@@ -123,8 +124,7 @@ def shifted_codes():
             yield ecodes[key_name], char
 
 
-@click.command(help="Listen for barcode scanner")
-def start():
+def yield_coroutines():
 
     print("Starting on machine {}".format(get_machine_uuid()))
 
@@ -136,7 +136,14 @@ def start():
         warnings.warn('No devices found')
 
     for device in devices:
-        asyncio.ensure_future(print_events(device))
+        yield partial(print_events, device)
+
+
+@click.command(help="Listen for barcode scanner")
+def start():
+
+    for coroutine in yield_coroutines():
+        asyncio.ensure_future(coroutine())
 
     loop = asyncio.get_event_loop()
     loop.run_forever()
