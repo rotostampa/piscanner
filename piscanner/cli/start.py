@@ -7,7 +7,7 @@ import click
 def yield_coroutines():
     for module, cmd in (
         ("piscanner.core.listener", "listener_coroutines"),
-        ("piscanner.core.server", "start_server"),
+        ("piscanner.core.server", "server_coroutines"),
     ):
 
         func = getattr(import_module(module), cmd)

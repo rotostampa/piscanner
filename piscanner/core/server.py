@@ -47,8 +47,11 @@ async def handle_client(reader, writer):
     writer.close()
     await writer.wait_closed()
 
-async def start_server(port=9800):
+async def start_server(port):
     server = await asyncio.start_server(handle_client, '0.0.0.0', port)
     print("Serving on port {}...".format(port))
     async with server:
         await server.serve_forever()
+
+def server_coroutines(port=9800):
+    yield start_server, (), {"port": port}
