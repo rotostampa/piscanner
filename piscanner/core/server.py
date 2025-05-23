@@ -1,7 +1,10 @@
-import asyncio
+import asyncio, datetime
 from piscanner.utils.storage import read
 from piscanner.utils.machine import get_machine_uuid
 
+def time_to_date(t):
+    if t:
+        return datetime.datetime.fromtimestamp(t)
 
 async def handle_client(reader, writer):
     # Read and ignore client request
@@ -51,10 +54,14 @@ async def handle_client(reader, writer):
     # Stream rows one by one
     rows = await read()
     for row in rows:
+        id_, barcode, create_ts, uploaded_ts = row
         row_html = (
-            "<tr>"
-            + "".join(f"<td>{col if col is not None else 'None'}</td>" for col in row)
-            + "</tr>\n"
+            f"<tr>"
+            f"<td>{id_}</td>"
+            f"<td>{barcode}</td>"
+            f"<td>{time_to_date(create_ts)}</td>"
+            f"<td>{time_to_date(uploaded_ts)}</td>"
+            f"</tr>\n"
         )
         await write_chunk(row_html)
 
