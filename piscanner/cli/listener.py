@@ -2,6 +2,7 @@ import asyncio
 import evdev
 import click
 import warnings
+import sys
 
 from evdev.ecodes import ecodes
 from piscanner.utils.machine import get_machine_uuid
@@ -22,6 +23,8 @@ async def print_events(device):
     print(
         f"Listening on {device.name} at {device.path}, VID={device.info.vendor}, PID={device.info.product}, Serial={device.uniq}"
     )
+
+    sys.stdout.flush()
 
     # print("KEY_ENTER: {} EV_KEY: {}".format(KEY_ENTER, EV_KEY))
     # print("Scancodes", scancodes)
@@ -46,6 +49,7 @@ async def print_events(device):
                 if code == KEY_ENTER:
                     if buffer:  # Only print if there's content
                         print(">>> {}".format(buffer))
+                        sys.stdout.flush()
                     buffer = ""
                 else:
                     # Choose character based on shift state
@@ -130,6 +134,8 @@ def shifted_codes():
 def listen():
 
     print("Starting on machine {}".format(get_machine_uuid()))
+
+    sys.stdout.flush()
 
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 
