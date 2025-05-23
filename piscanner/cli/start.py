@@ -2,6 +2,7 @@ from importlib import import_module
 import traceback
 import asyncio
 import click
+from piscanner.utils.storage import read, init
 
 
 def yield_coroutines():
@@ -27,6 +28,9 @@ async def restart_on_failure(coroutine_func, *args, **kwargs):
 
 @click.command(help="Listen for barcode scanner")
 def start():
+
+    print('init db')
+    asyncio.run(init())
 
     for coroutine, args, opts in yield_coroutines():
         asyncio.ensure_future(restart_on_failure(coroutine, *args, **opts))
