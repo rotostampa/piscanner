@@ -1,5 +1,6 @@
 import asyncio
-from piscanner.utils.storage import read  # async read function imported
+from piscanner.utils.storage import read
+from piscanner.utils.machine import get_machine_uuid
 
 
 async def handle_client(reader, writer):
@@ -10,29 +11,54 @@ async def handle_client(reader, writer):
     headers = (
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/html; charset=utf-8\r\n"
-        "Transfer-Encoding: chunked\r\n"  # use chunked for streaming
+        "Transfer-Encoding: chunked\r\n"
         "\r\n"
     )
     writer.write(headers.encode())
     await writer.drain()
 
-    async def write_chunk(data: bytes):
-        # Write chunk size in hex + CRLF
+    async def write_chunk(data: str):
         writer.write(f"{len(data):X}\r\n".encode())
-        writer.write(data)
+        writer.write(data.encode())
         writer.write(b"\r\n")
         await writer.drain()
 
-    # Write the first chunk: HTML header + table header
+    # Write the first chunk: HTML header + styled table header inside a centered container
     await write_chunk(
-        b"""<!DOCTYPE html>
-<html>
+        """<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Barcodes</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"></head><body>
-<h1>Barcodes</h1>
-<table border="1"><thead><tr><th>ID</th><th>Barcode</th><th>Create Timestamp</th><th>Uploaded Timestamp</th></tr></thead><tbody>
-"""
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Barcodes {uuid}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        padding: 2rem;
+      }
+      main.container {
+        max-width: 800px;
+        width: 100%;
+      }
+      table {
+        margin-top: 1rem;
+        width: 100%;
+      }
+    </style>
+</head>
+<body>
+  <main class="container">
+    <h1 style="text-align:center;">Barcodes</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Barcode</th><th>Create Timestamp</th><th>Uploaded Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+""".format(uuid = get_machine_uuid())
     )
 
     # Stream rows one by one
@@ -46,9 +72,9 @@ async def handle_client(reader, writer):
         await write_chunk(row_html.encode())
 
     # Write closing tags
-    await write_chunk(b"</tbody></table></body></html>")
+    await write_chunk(b"</tbody></table></main></body></html>")
 
-    # Write last chunk (zero length) to indicate end of chunks
+    # Last chunk
     writer.write(b"0\r\n\r\n")
     await writer.drain()
 
