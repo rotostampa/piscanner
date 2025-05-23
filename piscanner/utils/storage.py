@@ -1,8 +1,9 @@
 import aiosqlite
 import time
-from pathlib import Path
 
-DB_FILE = Path(__file__).parent.parent / "barcodes.db"
+import os
+
+DB_FILE = os.path.join(os.path.expanduser("~"), "piscanner.db")
 
 
 async def init():
