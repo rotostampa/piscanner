@@ -3,7 +3,7 @@ import time
 
 import os
 
-DB_FILE = os.path.join(os.path.expanduser("~"), "piscanner.db")
+DB_FILE = os.path.join(os.path.expanduser("~"), "piscanner-v1.db")
 
 
 async def init():
@@ -13,8 +13,8 @@ async def init():
             CREATE TABLE IF NOT EXISTS barcodes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 barcode TEXT,
-                create_timestamp INTEGER,
-                uploaded_timestamp INTEGER
+                create_timestamp REAL,
+                uploaded_timestamp REAL
             )
         """
         )
@@ -25,7 +25,7 @@ async def insert_barcode(barcode: str):
     async with aiosqlite.connect(DB_FILE) as db:
         await db.execute(
             "INSERT INTO barcodes (barcode, create_timestamp, uploaded_timestamp) VALUES (?, ?, ?)",
-            (barcode, int(time.time()), None),
+            (barcode, time.time(), None),
         )
         await db.commit()
 
