@@ -9,7 +9,7 @@ from piscanner.utils.machine import is_mac
 
 def yield_coroutines():
     for module, cmd, check in (
-        ("piscanner.core.listener", "listener_coroutines", is_mac),
+        ("piscanner.core.listener", "listener_coroutines", not is_mac),
         ("piscanner.core.server", "server_coroutines", True),
     ):
         if check:
