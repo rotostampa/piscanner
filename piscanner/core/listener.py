@@ -3,7 +3,7 @@ import warnings
 import sys
 
 from evdev.ecodes import ecodes
-from piscanner.core.machine import get_machine_uuid
+from piscanner.utils.machine import get_machine_uuid
 
 EV_KEY = ecodes["EV_KEY"]
 KEY_LEFTSHIFT = ecodes["KEY_LEFTSHIFT"]
