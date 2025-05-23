@@ -10,7 +10,7 @@ EV_KEY = ecodes["EV_KEY"]
 KEY_LEFTSHIFT = ecodes["KEY_LEFTSHIFT"]
 KEY_RIGHTSHIFT = ecodes["KEY_RIGHTSHIFT"]
 
-BARCODE_TERMINATOR = ecodes["KEY_DOT"]
+BARCODE_TERMINATOR = ecodes["KEY_ENTER"]
 
 
 async def print_events(device):
