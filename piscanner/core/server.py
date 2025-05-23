@@ -1,4 +1,4 @@
-import asyncio, datetime
+import asyncio
 from piscanner.utils.storage import read
 from piscanner.utils.machine import get_machine_uuid
 
@@ -51,14 +51,17 @@ async def handle_client(reader, writer):
     # Stream rows one by one
     async for row in read():
         await write_chunk(
-        """
+            """
             <tr>
             <td>{id}</td>
             <td>{barcode}</td>
             <td>{created_timestamp}</td>
             <td>{uploaded_timestamp}</td>
             </tr>
-        """.format(**row))
+        """.format(
+                **row
+            )
+        )
 
     # Write closing tags
     await write_chunk("</tbody></table></main></body></html>")

@@ -4,15 +4,16 @@ import datetime
 import asyncio
 
 import os
-import uuid
 
 db_lock = asyncio.Lock()
 
 DB_FILE = os.path.join(os.path.expanduser("~"), "piscanner-v4.db")
 
+
 def time_to_date(t):
     if t:
         return datetime.datetime.fromtimestamp(t / 10000)
+
 
 def timestamp():
     return time.time() * 10000
@@ -50,7 +51,7 @@ async def read(limit=50):
         "SELECT id, barcode, created_timestamp, uploaded_timestamp FROM barcodes ORDER BY created_timestamp DESC LIMIT ?",
         (limit,),
     )
-    async for (id, barcode, created_timestamp, uploaded_timestamp) in cursor:
+    async for id, barcode, created_timestamp, uploaded_timestamp in cursor:
         yield {
             "id": id,
             "barcode": barcode,

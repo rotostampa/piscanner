@@ -3,17 +3,22 @@ import traceback
 import asyncio
 import click
 from piscanner.utils.storage import init
+import platform
+import warnings
+
+is_mac = platform.system() != "Darwin"
 
 
 def yield_coroutines():
-    for module, cmd in (
-        ("piscanner.core.listener", "listener_coroutines"),
-        ("piscanner.core.server", "server_coroutines"),
+    for module, cmd, check in (
+        ("piscanner.core.listener", "listener_coroutines", is_mac),
+        ("piscanner.core.server", "server_coroutines", True),
     ):
-
-        func = getattr(import_module(module), cmd)
-
-        yield from func()
+        if check:
+            func = getattr(import_module(module), cmd)
+            yield from func()
+        else:
+            warnings.warn("Warning {}.{} won't run on your system".format(module, cmd))
 
 
 async def restart_on_failure(coroutine_func, *args, **kwargs):
