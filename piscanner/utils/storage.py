@@ -54,6 +54,6 @@ async def read(limit=50):
             yield {
                 "id": id,
                 "barcode": barcode,
-                "create_timestamp": time_to_date(created_timestamp),
+                "created_timestamp": time_to_date(created_timestamp),
                 "uploaded_timestamp": time_to_date(uploaded_timestamp),
             }
