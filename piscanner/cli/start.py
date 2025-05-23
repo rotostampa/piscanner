@@ -27,7 +27,6 @@ async def restart_on_failure(coroutine_func, *args, **kwargs):
 
 
 async def main():
-    print("init db")
     await init()
 
     for coroutine, args, opts in yield_coroutines():
