@@ -1,8 +1,5 @@
-import asyncio
 import evdev
-import click
 import warnings
-import traceback
 import sys
 
 from evdev.ecodes import ecodes
@@ -124,17 +121,7 @@ def shifted_codes():
             yield ecodes[key_name], char
 
 
-async def restart_on_failure(coroutine_func, *args, **kwargs):
-    while True:
-        try:
-            await coroutine_func(*args, **kwargs)
-        except Exception:
-            print(f"Coroutine {coroutine_func} failed with exception:")
-            traceback.print_exc()  # prints traceback to stderr by default
-            await asyncio.sleep(1)
-
-
-def yield_coroutines():
+def listener_coroutines():
 
     print("Starting on machine {}".format(get_machine_uuid()))
 
@@ -147,13 +134,3 @@ def yield_coroutines():
 
     for device in devices:
         yield print_events, (), {"device": device}
-
-
-@click.command(help="Listen for barcode scanner")
-def start():
-
-    for coroutine, args, opts in yield_coroutines():
-        asyncio.ensure_future(restart_on_failure(coroutine, *args, **opts))
-
-    loop = asyncio.get_event_loop()
-    loop.run_forever()
