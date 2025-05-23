@@ -8,9 +8,10 @@ from evdev.ecodes import ecodes
 from piscanner.core.machine import get_machine_uuid
 
 EV_KEY = ecodes["EV_KEY"]
-KEY_ENTER = ecodes["KEY_ENTER"]
 KEY_LEFTSHIFT = ecodes["KEY_LEFTSHIFT"]
 KEY_RIGHTSHIFT = ecodes["KEY_RIGHTSHIFT"]
+
+BARCODE_TERMINATOR = ecodes["KEY_DOT"]
 
 
 async def print_events(device):
@@ -26,29 +27,23 @@ async def print_events(device):
 
     sys.stdout.flush()
 
-    # print("KEY_ENTER: {} EV_KEY: {}".format(KEY_ENTER, EV_KEY))
-    # print("Scancodes", scancodes)
-    # print("Shifted scancodes", shifted_scancodes)
-    # print("-" * 20)
-
     async for event in device.async_read_loop():
         if event.type == EV_KEY:
             key_event = evdev.categorize(event)
             code = key_event.scancode
 
             # Handle shift key state
-            if code in [KEY_LEFTSHIFT, KEY_RIGHTSHIFT]:
+            if code in {KEY_LEFTSHIFT, KEY_RIGHTSHIFT}:
                 shift_pressed = key_event.keystate == key_event.key_down
-                # print(f'SHIFT {"PRESSED" if shift_pressed else "RELEASED"}')
                 continue
 
             # Only process key down events for other keys
             if key_event.keystate == key_event.key_down:
                 # print("GOT CODE", code, "SHIFT:", shift_pressed)
 
-                if code == KEY_ENTER:
-                    if buffer:  # Only print if there's content
-                        print(">>> {}".format(buffer))
+                if code == BARCODE_TERMINATOR:
+                    if buffer:
+                        print("✍🏻 {}".format(buffer.strip()))
                         sys.stdout.flush()
                     buffer = ""
                 else:
