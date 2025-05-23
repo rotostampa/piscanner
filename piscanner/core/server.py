@@ -43,7 +43,9 @@ async def handle_client(reader, writer):
       </tr>
     </thead>
     <tbody>
-""".format(uuid = get_machine_uuid())
+""".format(
+            uuid=get_machine_uuid()
+        )
     )
 
     # Stream rows one by one

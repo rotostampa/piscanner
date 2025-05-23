@@ -2,7 +2,7 @@ from importlib import import_module
 import traceback
 import asyncio
 import click
-from piscanner.utils.storage import read, init
+from piscanner.utils.storage import init
 
 
 def yield_coroutines():
@@ -27,7 +27,7 @@ async def restart_on_failure(coroutine_func, *args, **kwargs):
 
 
 async def main():
-    print('init db')
+    print("init db")
     await init()
 
     for coroutine, args, opts in yield_coroutines():
