@@ -2,6 +2,8 @@ from importlib import import_module
 
 import click
 
+print('starting click')
+
 
 @click.group()
 @click.pass_context
