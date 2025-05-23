@@ -55,13 +55,13 @@ async def handle(request):
     return web.Response(text=html, content_type="text/html")
 
 
-async def start_app():
+async def start_app(port = 80):
     app = web.Application()
     app.add_routes([web.get("/", handle)])
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, "localhost", 8080)
-    print("Serving on http://localhost:8080")
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    print(f"Serving on http://0.0.0.0:{port}")
     await site.start()
 
     # Run forever
