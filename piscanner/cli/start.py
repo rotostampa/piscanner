@@ -39,11 +39,9 @@ async def print_events(device):
 
             # Only process key down events for other keys
             if key_event.keystate == key_event.key_down:
-                # print("GOT CODE", code, "SHIFT:", shift_pressed)
-
                 if code == BARCODE_TERMINATOR:
                     if buffer:
-                        print("✍🏻 {}".format(buffer.strip()))
+                        print(buffer.strip())
                         sys.stdout.flush()
                     buffer = ""
                 else:
