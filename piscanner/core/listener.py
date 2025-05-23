@@ -6,11 +6,13 @@ from evdev.ecodes import ecodes
 from piscanner.utils.machine import get_machine_uuid
 from piscanner.utils.storage import insert_barcode
 
+
+
+BARCODE_TERMINATOR = ecodes["KEY_ENTER"]
+
 EV_KEY = ecodes["EV_KEY"]
 KEY_LEFTSHIFT = ecodes["KEY_LEFTSHIFT"]
 KEY_RIGHTSHIFT = ecodes["KEY_RIGHTSHIFT"]
-
-BARCODE_TERMINATOR = ecodes["KEY_ENTER"]
 
 
 async def print_events(device):
@@ -20,11 +22,13 @@ async def print_events(device):
     buffer = ""
     shift_pressed = False
 
-    print(
-        f"Listening on {device.name} at {device.path}, VID={device.info.vendor}, PID={device.info.product}, Serial={device.uniq}"
-    )
+    print(f"Listening on {device.name} at {device.path}, VID={device.info.vendor}, PID={device.info.product}, Serial={device.uniq}")
 
-    sys.stdout.flush()
+
+    #print("KEY_ENTER: {} EV_KEY: {}".format(KEY_ENTER, EV_KEY))
+    #print("Scancodes", scancodes)
+    #print("Shifted scancodes", shifted_scancodes)
+    #print("-" * 20)
 
     async for event in device.async_read_loop():
         if event.type == EV_KEY:
@@ -32,17 +36,17 @@ async def print_events(device):
             code = key_event.scancode
 
             # Handle shift key state
-            if code in {KEY_LEFTSHIFT, KEY_RIGHTSHIFT}:
+            if code in [KEY_LEFTSHIFT, KEY_RIGHTSHIFT]:
                 shift_pressed = key_event.keystate == key_event.key_down
+                #print(f'SHIFT {"PRESSED" if shift_pressed else "RELEASED"}')
                 continue
 
             # Only process key down events for other keys
             if key_event.keystate == key_event.key_down:
-                if code == BARCODE_TERMINATOR:
-                    if buffer:
-                        print(buffer.strip())
-                        sys.stdout.flush()
+                #print("GOT CODE", code, "SHIFT:", shift_pressed)
 
+                if code == BARCODE_TERMINATOR:
+                    if buffer:  # Only print if there's content
                         await insert_barcode(buffer.strip())
                     buffer = ""
                 else:
@@ -122,6 +126,7 @@ def shifted_codes():
     for key_name, char in shifted_punctuation.items():
         if key_name in ecodes:
             yield ecodes[key_name], char
+
 
 
 def listener_coroutines():
