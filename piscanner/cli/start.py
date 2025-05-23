@@ -7,7 +7,7 @@ from piscanner.utils.storage import read, init
 
 def yield_coroutines():
     for module, cmd in (
-        #("piscanner.core.listener", "listener_coroutines"),
+        ("piscanner.core.listener", "listener_coroutines"),
         ("piscanner.core.server", "server_coroutines"),
     ):
 
