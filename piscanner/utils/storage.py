@@ -45,17 +45,20 @@ async def insert_barcode(barcode: str):
 
 
 async def read(limit=50):
-    db = await aiosqlite.connect(DB_FILE)
-    cursor = await db.execute(
-        "SELECT id, barcode, created_timestamp, uploaded_timestamp FROM barcodes ORDER BY created_timestamp DESC LIMIT ?",
-        (limit,),
-    )
-    async for (id, barcode, created_timestamp, uploaded_timestamp) in cursor:
-        yield {
+    async with aiosqlite.connect(DB_FILE) as db:
+        cursor = await db.execute(
+            "SELECT id, barcode, created_timestamp, uploaded_timestamp FROM barcodes ORDER BY created_timestamp DESC LIMIT ?",
+            (limit,),
+        )
+        rows = await cursor.fetchall()
+
+    def row_to_dict(row):
+        id, barcode, created_timestamp, uploaded_timestamp = row
+        return {
             "id": id,
             "barcode": barcode,
             "created_timestamp": time_to_date(created_timestamp),
             "uploaded_timestamp": time_to_date(uploaded_timestamp),
         }
 
-    await db.close()
+    return [row_to_dict(row) for row in rows]
