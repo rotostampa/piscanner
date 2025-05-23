@@ -5,6 +5,7 @@ import sys
 from evdev.ecodes import ecodes
 from piscanner.utils.machine import get_machine_uuid
 from piscanner.utils.storage import insert_barcode
+from asyncio.tasks import ensure_future
 
 
 
@@ -48,7 +49,7 @@ async def print_events(device):
                 if code == BARCODE_TERMINATOR:
                     if buffer:  # Only print if there's content
                         print(buffer.strip())
-                        #await insert_barcode(buffer.strip())
+                        ensure_future(insert_barcode(buffer.strip()))
                     buffer = ""
                 else:
                     # Choose character based on shift state
