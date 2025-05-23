@@ -81,5 +81,5 @@ async def start_server(port):
         await server.serve_forever()
 
 
-def server_coroutines(port=is_mac and 9800 or 80):
+def server_coroutines(port=9999):
     yield start_server, (), {"port": port}
