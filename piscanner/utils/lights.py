@@ -21,8 +21,9 @@ def setup_gpio():
     GPIO.setmode(GPIO.BCM)
 
     # Set up pins with initial LOW state to prevent brief HIGH during setup
-    GPIO.setup(GREEN_PIN, GPIO.OUT, initial=GPIO.HIGH)
-    GPIO.setup(RED_PIN, GPIO.OUT, initial=GPIO.HIGH)
+    #
+    for pin in (RED_PIN, GREEN_PIN, YELLOW_PIN):
+        GPIO.setup(pin, GPIO.OUT, initial=GPIO.HIGH)
 
 
 def cleanup_gpio():
