@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 from piscanner.utils.storage import read
 from piscanner.utils.machine import get_hostname
 from functools import partial
@@ -30,13 +31,14 @@ async def handle_client(reader, writer, verbose=False):
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="3">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{uuid}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
 </head>
 <body class="container flow">
   <br/>
-  <h1 class="text-center">{uuid}</h1>
+  <h1 class="text-center">{uuid} <small style='color:gray;float:right;font-size:10px'>{now}</small></h1>
   <table>
     <thead>
       <tr>
@@ -45,7 +47,7 @@ async def handle_client(reader, writer, verbose=False):
     </thead>
     <tbody>
 """.format(
-            uuid=get_hostname()
+            uuid=get_hostname(), now=datetime.datetime.now()
         )
     )
 
