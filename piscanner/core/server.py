@@ -44,7 +44,7 @@ async def handle_client(reader, writer, verbose=False):
 </head>
 <body class="container flow">
   <br/>
-  <h1 style='text-align:center'>{hostname} <small style='color:gray;font-size:10px;padding-left: 30px'>Last updated &rarr; {time}</small></h1>
+  <h1>&#129302; {hostname} <small style='color:gray;font-size:10px;padding-left: 30px'>Last updated &rarr; {time}</small></h1>
   <table>
     <thead>
       <tr>
@@ -73,7 +73,7 @@ async def handle_client(reader, writer, verbose=False):
         )
 
     # Write closing tags
-    await write_chunk("</tbody></table><footer style='text-align:center;color:gray'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>")
+    await write_chunk("</tbody></table><footer style='color:gray'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>")
 
 
     # Last chunk
