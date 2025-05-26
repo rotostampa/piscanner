@@ -63,6 +63,6 @@ async def main(**kwargs):
 
 
 @click.command(help="Listen for barcode scanner")
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def start(verbose):
-    asyncio.run(main(verbose = verbose))
+    asyncio.run(main(verbose=verbose))

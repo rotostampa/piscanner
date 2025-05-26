@@ -50,7 +50,7 @@ async def print_events(device, verbose=False):
                 if code == BARCODE_TERMINATOR:
                     if buffer:  # Only print if there's content
                         if verbose:
-                            print('⌨️ ', buffer.strip())
+                            print("⌨️ ", buffer.strip())
                         ensure_future(insert_barcode(buffer.strip()))
                     buffer = ""
                 else:
@@ -133,7 +133,6 @@ def shifted_codes():
 
 
 def listener_coroutines(*args, **opts):
-
 
     print("⌨️ Starting on machine {}".format(get_hostname()))
 

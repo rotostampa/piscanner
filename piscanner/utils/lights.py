@@ -35,7 +35,9 @@ def cleanup_gpio():
 
 
 # The generic async function
-async def control_light(pin: int, duration: float = 1.0, wait: float = 1.0, verbose = False):
+async def control_light(
+    pin: int, duration: float = 1.0, wait: float = 1.0, verbose=False
+):
 
     if not is_mac:
         import RPi.GPIO as GPIO
