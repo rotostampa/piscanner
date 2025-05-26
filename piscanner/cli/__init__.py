@@ -13,6 +13,8 @@ for module, cmd in (
     ("piscanner.cli.start", "start"),
     ("piscanner.cli.noop", "noop"),
     ("piscanner.cli.populate", "populate"),
+    ("piscanner.cli.lights", "red_light"),
+    ("piscanner.cli.lights", "green_light"),
 ):
     cli.add_command(getattr(import_module(module), cmd))
 
