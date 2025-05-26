@@ -12,18 +12,17 @@ def setup_gpio():
 
     GPIO.setmode(GPIO.BCM)
 
-    GPIO.setup(GREEN_PIN, GPIO.OUT)
-    GPIO.setup(RED_PIN, GPIO.OUT)
-
-    # Ensure both are off
-    GPIO.output(GREEN_PIN, GPIO.LOW)
-    GPIO.output(RED_PIN, GPIO.LOW)
-
-    GPIO.setwarnings(True)
+    # Set up pins with initial LOW state to prevent brief HIGH during setup
+    GPIO.setup(GREEN_PIN, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(RED_PIN, GPIO.OUT, initial=GPIO.LOW)
 
 
 def cleanup_gpio():
     import RPi.GPIO as GPIO
+
+    # Ensure lights are off before cleanup
+    GPIO.output(GREEN_PIN, GPIO.LOW)
+    GPIO.output(RED_PIN, GPIO.LOW)
 
     GPIO.cleanup()
 
