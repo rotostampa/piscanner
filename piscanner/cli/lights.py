@@ -1,5 +1,5 @@
 import asyncio
-import click
+import click, time
 
 # Define pins
 GREEN_PIN = 2
@@ -48,8 +48,10 @@ async def control_light(pin: int, duration: float, wait: float):
 @click.option("--wait", default="1", type=int, help="Time to wait for")
 def alert(duration, wait):
 
+    print('setup')
     setup_gpio()
-    asyncio.run(control_light(duration=duration, wait=wait, pin=RED_PIN))
+    time.sleep(1)
+    print('cleanup')
     cleanup_gpio()
 
 
