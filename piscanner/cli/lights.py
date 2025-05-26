@@ -16,6 +16,9 @@ def setup_gpio():
     GPIO.setup(GREEN_PIN, GPIO.OUT, initial=GPIO.LOW)
     GPIO.setup(RED_PIN, GPIO.OUT, initial=GPIO.LOW)
 
+    # Double-check both are off (redundant but safe)
+    GPIO.output(GREEN_PIN, GPIO.LOW)
+    GPIO.output(RED_PIN, GPIO.LOW)
 
 def cleanup_gpio():
     import RPi.GPIO as GPIO
