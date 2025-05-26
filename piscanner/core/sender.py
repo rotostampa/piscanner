@@ -57,9 +57,8 @@ async def start_sender(verbose, sleep_duration=5):
                             f"❌ Error sending records: {response.status} {response.reason}"
                         )
                         # print(f"Response: {response_text}")
-        else:
-            if verbose:
-                print("📤 No records to send")
+        elif verbose:
+            print("📤 No records to send")
 
         # Wait before next attempt
         await asyncio.sleep(sleep_duration)
