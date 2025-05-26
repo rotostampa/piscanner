@@ -38,8 +38,10 @@ async def start_sender(verbose, sleep_duration=5):
                     },
                 ) as response:
                     if response.status == 200:
+                        print(f"✅ Successfully sent {len(records)} records")
                         if verbose:
-                            print(f"✅ Successfully sent {len(records)} records")
+                            for record in records:
+                                print("📤 Sent record: {record}".format(**record))
 
                         # Mark records as uploaded in the database
                         updated_count = await mark_as_uploaded(
@@ -54,7 +56,7 @@ async def start_sender(verbose, sleep_duration=5):
                         # response_text = await response.text()
 
                         print(
-                            f"❌ Error sending records: {response.status} {response.reason}"
+                            f"⚠️ Error sending records: {response.status} {response.reason}"
                         )
                         # print(f"Response: {response_text}")
         elif verbose:
