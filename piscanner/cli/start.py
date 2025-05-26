@@ -11,6 +11,7 @@ def yield_coroutines():
     for module, cmd, check in (
         ("piscanner.core.listener", "listener_coroutines", not is_mac),
         ("piscanner.core.server", "server_coroutines", True),
+        ("piscanner.core.sender", "sender_coroutines", True),
     ):
         if check:
             func = getattr(import_module(module), cmd)
