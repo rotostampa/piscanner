@@ -25,7 +25,7 @@ async def start_sender(verbose, sleep_duration=5):
         # If we have records to send
         if records:
             if verbose:
-                print(f"📤 Sending {len(records)} records to server...")
+                print(f"📤 Sending {len(records)} barcodes to server...")
 
             # Send the request asynchronously
             async with aiohttp.ClientSession(json_serialize=json.dumps) as session:
@@ -38,10 +38,10 @@ async def start_sender(verbose, sleep_duration=5):
                     },
                 ) as response:
                     if response.status == 200:
-                        print(f"✅ Successfully sent {len(records)} records")
+                        print(f"✅ Successfully sent {len(records)} barcodes")
                         if verbose:
                             for record in records:
-                                print("📤 Sent record: {barcode}".format(**record))
+                                print("📤 Sent barcode: {barcode}".format(**record))
 
                         # Mark records as uploaded in the database
                         updated_count = await mark_as_uploaded(
@@ -50,17 +50,17 @@ async def start_sender(verbose, sleep_duration=5):
 
                         if verbose and updated_count != len(records):
                             print(
-                                f"⚠️ Only updated {updated_count} of {len(records)} records"
+                                f"⚠️ Only updated {updated_count} of {len(records)} barcodes"
                             )
                     elif verbose:
                         # response_text = await response.text()
 
                         print(
-                            f"⚠️ Error sending records: {response.status} {response.reason}"
+                            f"⚠️ Error sending barcodes: {response.status} {response.reason}"
                         )
                         # print(f"Response: {response_text}")
         elif verbose:
-            print("📤 No records to send")
+            print("📤 No barcodes to send")
 
         # Wait before next attempt
         await asyncio.sleep(sleep_duration)
