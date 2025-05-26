@@ -3,6 +3,7 @@ import os
 import aiohttp
 from piscanner.utils.storage import read, mark_as_uploaded
 from piscanner.utils import json
+from piscanner.utils.machine import get_hostname
 
 
 async def start_sender(verbose, sleep_duration=5):
@@ -10,6 +11,8 @@ async def start_sender(verbose, sleep_duration=5):
     API_HOST = os.getenv("PISCANNER_SERVER_HOST") or "sprint24.com"
     API_PATH = "/api/storage/piscanner-notify-barcode/"
     API_KEY = os.getenv("PISCANNER_API_KEY")
+
+    hostname = get_hostname()
 
     if not API_KEY:
         if verbose:
@@ -20,7 +23,7 @@ async def start_sender(verbose, sleep_duration=5):
         records = []
         async for record in read(limit=100, not_uploaded_only=True):
             # Add records without manual datetime conversion
-            records.append(record)
+            records.append({**record, "hostname": hostname})
 
         # If we have records to send
         if records:
@@ -41,7 +44,7 @@ async def start_sender(verbose, sleep_duration=5):
                         print(f"✅ Successfully sent {len(records)} barcodes")
                         if verbose:
                             for record in records:
-                                print("📤 Sent barcode: {barcode}".format(**record))
+                                print(f"📤 Sent barcode: {record}")
 
                         # Mark records as uploaded in the database
                         updated_count = await mark_as_uploaded(
