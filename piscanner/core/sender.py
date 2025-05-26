@@ -4,7 +4,8 @@ import aiohttp
 from piscanner.utils.storage import read, mark_as_uploaded
 from piscanner.utils import json
 from piscanner.utils.machine import get_hostname
-
+from piscanner.utils.lights import setup_gpio, cleanup_gpio, flash_green, flash_red, flash_yellow
+import venv
 
 async def start_sender(verbose, sleep_duration=5):
     # API endpoint details
@@ -27,6 +28,9 @@ async def start_sender(verbose, sleep_duration=5):
 
         # If we have records to send
         if records:
+
+            await flash_yellow(verbose=verbose)
+
             if verbose:
                 print(f"📤 Sending {len(records)} barcodes to server...")
 

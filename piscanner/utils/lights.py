@@ -6,8 +6,9 @@ from piscanner.utils.machine import is_mac
 lights_lock = asyncio.Lock()
 
 # Define pins
-RED_PIN = 2
-GREEN_PIN = 3
+RED_PIN = 3
+GREEN_PIN = 4
+YELLOW_PIN = 2
 
 
 def setup_gpio():
@@ -59,3 +60,4 @@ async def control_light(
 
 flash_green = partial(control_light, pin=GREEN_PIN)
 flash_red = partial(control_light, pin=RED_PIN)
+flash_yellow = partial(control_light, pin=YELLOW_PIN)
