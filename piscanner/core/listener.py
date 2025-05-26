@@ -15,16 +15,17 @@ KEY_LEFTSHIFT = ecodes["KEY_LEFTSHIFT"]
 KEY_RIGHTSHIFT = ecodes["KEY_RIGHTSHIFT"]
 
 
-async def print_events(device):
+async def print_events(device, verbose=False):
 
     scancodes = dict(codes())
     shifted_scancodes = dict(shifted_codes())
     buffer = ""
     shift_pressed = False
 
-    print(
-        f"Listening on {device.name} at {device.path}, VID={device.info.vendor}, PID={device.info.product}, Serial={device.uniq}"
-    )
+    if verbose:
+        print(
+            f"⌨️ Listening on {device.name} at {device.path}, VID={device.info.vendor}, PID={device.info.product}, Serial={device.uniq}"
+        )
 
     # print("KEY_ENTER: {} EV_KEY: {}".format(KEY_ENTER, EV_KEY))
     # print("Scancodes", scancodes)
@@ -48,7 +49,8 @@ async def print_events(device):
 
                 if code == BARCODE_TERMINATOR:
                     if buffer:  # Only print if there's content
-                        print(buffer.strip())
+                        if verbose:
+                            print('⌨️ ', buffer.strip())
                         ensure_future(insert_barcode(buffer.strip()))
                     buffer = ""
                 else:
