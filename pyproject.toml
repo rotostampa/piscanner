@@ -2,6 +2,7 @@
 dependencies = [
     "click==8.2.1",
     "aiosqlite==0.21.0",
+    "aiohttp==3.12.0",
     "RPi.GPIO==0.7.1; sys_platform != 'darwin'",
     "evdev==1.9.2; sys_platform != 'darwin'",
 ]
