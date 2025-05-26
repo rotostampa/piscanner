@@ -16,6 +16,7 @@ for module, cmd in (
     ("piscanner.cli.lights", "cleanup"),
     ("piscanner.cli.lights", "alert"),
     ("piscanner.cli.lights", "success"),
+    ("piscanner.cli.populate", "cleanup"),
 ):
     cli.add_command(getattr(import_module(module), cmd))
 

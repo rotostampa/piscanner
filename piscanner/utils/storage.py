@@ -21,7 +21,7 @@ def time_to_date(t):
 
 
 def timestamp(seconds=0):
-    return (time.time() + seconds) * 1000000
+    return (time.time() - seconds) * 1000000
 
 
 async def init():
@@ -67,17 +67,17 @@ async def read(limit=50):
     await db.close()
 
 
-async def unsent_events_count(seconds_threshold=5):
+async def unsent_events_count(seconds=5):
     """
     Check if there are any records without an uploaded_timestamp.
 
     Args:
-        seconds_threshold: Number of seconds from now to filter out recently created records (default: 5)
+        seconds: Number of seconds from now to filter out recently created records (default: 5)
 
     Returns:
-        bool: True if there are unsent records, False otherwise
+        int: Number of unsent records
     """
-    cutoff_time = timestamp(seconds_threshold)
+    cutoff_time = timestamp(seconds)  # Negative seconds to exclude recent records
 
     async with aiosqlite.connect(DB_FILE) as db:
         cursor = await db.execute(
@@ -90,3 +90,27 @@ async def unsent_events_count(seconds_threshold=5):
         )
         count = await cursor.fetchone()
         return count[0]
+
+
+async def cleanup_db(seconds=86400):
+    """
+    Delete records older than the specified number of seconds.
+
+    Args:
+        seconds: Number of seconds to keep records for (default: 86400 - one day)
+                Records created before now - seconds will be deleted
+
+    Returns:
+        int: Number of records deleted
+    """
+    cutoff_time = timestamp(seconds)  # Negative seconds to go back in time
+
+    async with db_lock:
+        async with aiosqlite.connect(DB_FILE) as db:
+            cursor = await db.execute(
+                "DELETE FROM barcodes WHERE created_timestamp < ?",
+                (cutoff_time,)
+            )
+            deleted_count = cursor.rowcount
+            await db.commit()
+            return deleted_count
