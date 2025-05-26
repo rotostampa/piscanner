@@ -2,10 +2,9 @@ import asyncio
 import os
 import aiohttp
 from piscanner.utils.storage import read, mark_as_uploaded
-from piscanner.utils import json
 from piscanner.utils.machine import get_hostname
-from piscanner.utils.lights import setup_gpio, cleanup_gpio, flash_green, flash_red
-import venv
+import ssl
+
 
 async def start_sender(verbose, sleep_duration=5):
     # API endpoint details
@@ -21,51 +20,61 @@ async def start_sender(verbose, sleep_duration=5):
 
     while True:
         # Collect unsent records
-        records = []
+        records = {}
         async for record in read(limit=100, not_uploaded_only=True):
-            # Add records without manual datetime conversion
-            records.append({**record, "hostname": hostname})
+            records[record["id"]] = record["barcode"]
 
         # If we have records to send
         if records:
             url = f"https://{API_HOST}{API_PATH}"
 
+            # Build form data
+            form_data = [("hostname", hostname)]
+            for barcode in records.values():
+                form_data.append(("barcode", barcode))
+
+            print(f"📤 Sending {len(records)} barcodes to {url}...")
+
             if verbose:
-                print(f"📤 Sending {len(records)} barcodes to {url}...")
+
+                for barcode in records.values():
+                    print(f"📤 Sent barcode: {barcode}")
+
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE  # Disable cert verification
 
             # Send the request asynchronously
-            async with aiohttp.ClientSession(json_serialize=json.dumps) as session:
+            async with aiohttp.ClientSession() as session:
+                try:
+                    async with session.post(
+                        url,
+                        data=form_data,
+                        headers={
+                            "Authorization": f"Bearer {API_KEY}",
+                        },
+                        ssl=ssl_context,
+                    ) as response:
+                        if response.status == 200:
+                            print(f"✅ Successfully sent {len(records)} barcodes")
 
-                async with session.post(
-                    url,
-                    json=records,
-                    headers={
-                        "Content-Type": "application/json",
-                        "Authorization": f"Bearer {API_KEY}",
-                    },
-                ) as response:
-                    if response.status == 200:
-                        print(f"✅ Successfully sent {len(records)} barcodes")
-                        if verbose:
-                            for record in records:
-                                print(f"📤 Sent barcode: {record}")
-
-                        # Mark records as uploaded in the database
-                        updated_count = await mark_as_uploaded(
-                            tuple(record["id"] for record in records)
-                        )
-
-                        if verbose and updated_count != len(records):
-                            print(
-                                f"⚠️ Only updated {updated_count} of {len(records)} barcodes"
+                            # Mark records as uploaded in the database
+                            updated_count = await mark_as_uploaded(
+                                tuple(records.keys())
                             )
-                    elif verbose:
-                        # response_text = await response.text()
 
-                        print(
-                            f"⚠️ Error sending barcodes: {response.status} {response.reason}"
-                        )
-                        # print(f"Response: {response_text}")
+                            if verbose and updated_count != len(records):
+                                print(
+                                    f"⚠️ Only updated {updated_count} of {len(records)} barcodes"
+                                )
+                        elif verbose:
+                            print(
+                                f"⚠️ Error sending barcodes: {response.status} {response.reason}"
+                            )
+                except aiohttp.client_exceptions.ClientConnectorError as e:
+                    if verbose:
+                        print(f"⚠️ Error sending barcodes: {e}")
+
         elif verbose:
             print("📤 No barcodes to send")
 
