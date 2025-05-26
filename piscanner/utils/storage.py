@@ -108,8 +108,7 @@ async def cleanup_db(seconds=86400):
     async with db_lock:
         async with aiosqlite.connect(DB_FILE) as db:
             cursor = await db.execute(
-                "DELETE FROM barcodes WHERE created_timestamp < ?",
-                (cutoff_time,)
+                "DELETE FROM barcodes WHERE created_timestamp < ?", (cutoff_time,)
             )
             deleted_count = cursor.rowcount
             await db.commit()

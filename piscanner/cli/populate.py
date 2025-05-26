@@ -21,13 +21,16 @@ async def cleanup_database(seconds):
     await init()
     return await cleanup_db(seconds)
 
+
 @click.command(help="Populate with initial data")
 def populate():
     asyncio.run(populate_initial_data())
 
 
 @click.command(help="Cleanup old records from the database")
-@click.option("--days", default=1, type=float, help="Delete records older than this many days")
+@click.option(
+    "--days", default=1, type=float, help="Delete records older than this many days"
+)
 def cleanup(days):
     seconds = int(days * 86400)  # Convert days to seconds
     deleted = asyncio.run(cleanup_database(seconds))
