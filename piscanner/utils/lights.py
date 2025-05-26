@@ -8,7 +8,6 @@ lights_lock = asyncio.Lock()
 # Define pins
 RED_PIN = 14
 GREEN_PIN = 2
-YELLOW_PIN = 3
 
 
 def setup_gpio():
@@ -22,7 +21,7 @@ def setup_gpio():
 
     # Set up pins with initial LOW state to prevent brief HIGH during setup
     #
-    for pin in (RED_PIN, GREEN_PIN, YELLOW_PIN):
+    for pin in (RED_PIN, GREEN_PIN):
         GPIO.setup(pin, GPIO.OUT, initial=GPIO.HIGH)
 
 
@@ -61,4 +60,3 @@ async def control_light(
 
 flash_green = partial(control_light, pin=GREEN_PIN)
 flash_red = partial(control_light, pin=RED_PIN)
-flash_yellow = partial(control_light, pin=YELLOW_PIN)

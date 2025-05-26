@@ -2,12 +2,12 @@ import asyncio
 import click
 import time
 
-from piscanner.utils.lights import setup_gpio, cleanup_gpio, flash_green, flash_red, flash_yellow
+from piscanner.utils.lights import setup_gpio, cleanup_gpio, flash_green, flash_red
 
 
 
 async def test_lights():
-    for func in (flash_red, flash_green, flash_yellow):
+    for func in (flash_red, flash_green):
         await func(duration=1, wait=1, verbose=True)
 
 @click.command(help="Test wait")
