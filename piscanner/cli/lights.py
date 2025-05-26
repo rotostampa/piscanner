@@ -3,7 +3,7 @@ import click
 
 # Define pins
 GREEN_PIN = 2
-RED_PIN = 4
+RED_PIN = 3
 
 
 def setup_gpio():
