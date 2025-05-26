@@ -2,37 +2,7 @@ import asyncio
 import click
 import time
 
-# Define pins
-RED_PIN = 2
-GREEN_PIN = 3
-
-
-def setup_gpio():
-    import RPi.GPIO as GPIO
-
-    GPIO.setmode(GPIO.BCM)
-
-    # Set up pins with initial LOW state to prevent brief HIGH during setup
-    GPIO.setup(GREEN_PIN, GPIO.OUT, initial=GPIO.HIGH)
-    GPIO.setup(RED_PIN, GPIO.OUT, initial=GPIO.HIGH)
-
-def cleanup_gpio():
-    import RPi.GPIO as GPIO
-
-    GPIO.cleanup()
-
-
-# The generic async function
-async def control_light(pin: int, duration: float, wait: float):
-    import RPi.GPIO as GPIO
-
-    print(f"Turning ON light on GPIO{pin}")
-    GPIO.output(pin, GPIO.LOW)
-    await asyncio.sleep(duration)
-
-    print(f"Turning OFF light on GPIO{pin}")
-    GPIO.output(pin, GPIO.HIGH)
-    await asyncio.sleep(wait)
+from piscanner.utils.lights import setup_gpio, cleanup_gpio, flash_green, flash_red
 
 
 @click.command(help="Test wait")
@@ -41,7 +11,7 @@ async def control_light(pin: int, duration: float, wait: float):
 def alert(duration, wait):
 
     setup_gpio()
-    asyncio.run(control_light(duration=duration, wait=wait, pin=RED_PIN))
+    asyncio.run(flash_red(duration=duration, wait=wait))
     cleanup_gpio()
 
 
@@ -51,15 +21,15 @@ def alert(duration, wait):
 def success(duration, wait):
 
     setup_gpio()
-    asyncio.run(control_light(duration=duration, wait=wait, pin=GREEN_PIN))
+    asyncio.run(flash_green(duration=duration, wait=wait))
     cleanup_gpio()
 
 
 @click.command(help="Test wait")
 def cleanup():
 
-    print('setup')
+    print("setup")
     setup_gpio()
     time.sleep(1)
-    print('cleanup')
+    print("cleanup")
     cleanup_gpio()
