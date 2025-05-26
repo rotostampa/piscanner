@@ -11,7 +11,7 @@ from piscanner.utils.lights import setup_gpio, cleanup_gpio, flash_green, flash_
 def alert(duration, wait):
 
     setup_gpio()
-    asyncio.run(flash_red(duration=duration, wait=wait, verbose = True))
+    asyncio.run(flash_red(duration=duration, wait=wait, verbose=True))
     cleanup_gpio()
 
 
@@ -21,7 +21,7 @@ def alert(duration, wait):
 def success(duration, wait):
 
     setup_gpio()
-    asyncio.run(flash_green(duration=duration, wait=wait, verbose = True))
+    asyncio.run(flash_green(duration=duration, wait=wait, verbose=True))
     cleanup_gpio()
 
 
