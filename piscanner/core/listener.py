@@ -134,7 +134,8 @@ def shifted_codes():
 
 def listener_coroutines(*args, **opts):
 
-    print("Starting on machine {}".format(get_hostname()))
+
+    print("⌨️ Starting on machine {}".format(get_hostname()))
 
     sys.stdout.flush()
 
