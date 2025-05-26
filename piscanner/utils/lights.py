@@ -6,8 +6,8 @@ from piscanner.utils.machine import is_mac
 lights_lock = asyncio.Lock()
 
 # Define pins
-RED_PIN = 3
-GREEN_PIN = 4
+RED_PIN = 4
+GREEN_PIN = 3
 YELLOW_PIN = 2
 
 
