@@ -14,7 +14,7 @@ async def start_lights(verbose=False):
             print("💡 Uncounted events:", count)
 
         if count == 0:
-            await flash_green(verbose=verbose)
+            await flash_red(verbose=verbose)
         else:
             await flash_red(verbose=verbose)
 
