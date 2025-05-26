@@ -9,6 +9,7 @@ lights_lock = asyncio.Lock()
 GREEN_PIN = 2
 RED_PIN = 3
 
+
 def setup_gpio():
 
     if is_mac:
