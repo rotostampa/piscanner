@@ -1,9 +1,10 @@
 import asyncio
 from piscanner.utils.storage import read
 from piscanner.utils.machine import get_hostname
+from functools import partial
 
 
-async def handle_client(reader, writer):
+async def handle_client(reader, writer, verbose=False):
     # Read and ignore client request
     await reader.read(1024)
 
@@ -73,10 +74,15 @@ async def handle_client(reader, writer):
     writer.close()
     await writer.wait_closed()
 
+    if verbose:
+        print("🤖 server request completed")
 
-async def start_server(address="0.0.0.0", port=9800, verbose=False):
-    server = await asyncio.start_server(handle_client, address, port)
-    print("Serving on http://{}:{}...".format(get_hostname(), port))
+
+async def start_server(address="0.0.0.0", port=9999, verbose=False):
+    server = await asyncio.start_server(
+        partial(handle_client, verbose=verbose), address, port
+    )
+    print("🤖 Serving on http://{}:{}...".format(get_hostname(), port))
     async with server:
         await server.serve_forever()
 
