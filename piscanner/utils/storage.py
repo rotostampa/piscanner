@@ -4,6 +4,7 @@ import datetime
 import asyncio
 from piscanner.utils.machine import is_mac
 import os
+from itertools import repeat
 
 db_lock = asyncio.Lock()
 
@@ -70,7 +71,10 @@ async def read(limit=50, not_uploaded_only=False):
 
     query += " ORDER BY created_timestamp DESC LIMIT ?"
 
-    cursor = await db.execute(query, (limit,),)
+    cursor = await db.execute(
+        query,
+        (limit,),
+    )
 
     async for id, barcode, created_timestamp, uploaded_timestamp in cursor:
         yield {
@@ -108,6 +112,20 @@ async def unsent_events_count(seconds=5):
         return count[0]
 
 
+async def has_unsent_events(seconds=5):
+    """
+    Check if there are any records without an uploaded_timestamp.
+
+    Args:
+        seconds: Number of seconds from now to filter out recently created records (default: 5)
+
+    Returns:
+        bool: True if there are unsent records, False otherwise
+    """
+    count = await unsent_events_count(seconds)
+    return count > 0
+
+
 async def cleanup_db(seconds=86400):
     """
     Delete records older than the specified number of seconds.
@@ -129,3 +147,32 @@ async def cleanup_db(seconds=86400):
             deleted_count = cursor.rowcount
             await db.commit()
             return deleted_count
+
+
+async def mark_as_uploaded(record_ids):
+    """
+    Mark the specified records as uploaded by setting their uploaded_timestamp.
+
+    Args:
+        record_ids: List of record IDs to mark as uploaded
+
+    Returns:
+        int: Number of records updated
+    """
+    if not record_ids:
+        return 0
+
+    current_time = timestamp()
+
+    # Create placeholders for the SQL query using itertools.repeat
+    placeholders = ",".join(repeat("?", len(record_ids)))
+
+    async with db_lock:
+        async with aiosqlite.connect(DB_FILE) as db:
+            cursor = await db.execute(
+                f"UPDATE barcodes SET uploaded_timestamp = ? WHERE id IN ({placeholders})",
+                (current_time, *record_ids),
+            )
+            updated_count = cursor.rowcount
+            await db.commit()
+            return updated_count
