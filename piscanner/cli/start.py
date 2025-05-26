@@ -16,6 +16,7 @@ def yield_coroutines():
         ("piscanner.core.server", "server_coroutines", True),
         ("piscanner.core.sender", "sender_coroutines", True),
         ("piscanner.core.lights", "lights_coroutines", True),
+        ("piscanner.core.cleanup", "cleanup_coroutines", True),
     ):
         if check:
             func = getattr(import_module(module), cmd)
