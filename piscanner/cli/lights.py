@@ -44,7 +44,7 @@ async def control_light(pin: int, duration: float, wait: float):
 @click.command(help="Test wait")
 @click.option("--duration", default="1", type=int, help="Time to wait for")
 @click.option("--wait", default="1", type=int, help="Time to wait for")
-def red_light(duration, wait):
+def alert(duration, wait):
 
     setup_gpio()
     asyncio.run(control_light(duration=duration, wait=wait, pin=RED_PIN))
@@ -54,7 +54,7 @@ def red_light(duration, wait):
 @click.command(help="Test wait")
 @click.option("--duration", default="1", type=int, help="Time to wait for")
 @click.option("--wait", default="1", type=int, help="Time to wait for")
-def green_light(duration, wait):
+def success(duration, wait):
 
     setup_gpio()
     asyncio.run(control_light(duration=duration, wait=wait, pin=GREEN_PIN))
