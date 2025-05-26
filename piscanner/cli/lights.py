@@ -16,10 +16,6 @@ def setup_gpio():
     GPIO.setup(GREEN_PIN, GPIO.OUT, initial=GPIO.HIGH)
     GPIO.setup(RED_PIN, GPIO.OUT, initial=GPIO.HIGH)
 
-    # Double-check both are off (redundant but safe)
-    GPIO.output(GREEN_PIN, GPIO.HIGH)
-    GPIO.output(RED_PIN, GPIO.HIGH)
-
 def cleanup_gpio():
     import RPi.GPIO as GPIO
 
@@ -31,11 +27,11 @@ async def control_light(pin: int, duration: float, wait: float):
     import RPi.GPIO as GPIO
 
     print(f"Turning ON light on GPIO{pin}")
-    GPIO.output(pin, GPIO.HIGH)
+    GPIO.output(pin, GPIO.LOW)
     await asyncio.sleep(duration)
 
     print(f"Turning OFF light on GPIO{pin}")
-    GPIO.output(pin, GPIO.LOW)
+    GPIO.output(pin, GPIO.HIGH)
     await asyncio.sleep(wait)
 
 
