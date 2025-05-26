@@ -34,8 +34,14 @@ async def start_sender(verbose, sleep_duration=5):
 
             # Send the request asynchronously
             async with aiohttp.ClientSession(json_serialize=json.dumps) as session:
+
+                url = f"https://{API_HOST}{API_PATH}"
+
+                if verbose:
+                    print(f"📤 Sending to {url}")
+
                 async with session.post(
-                    f"https://{API_HOST}{API_PATH}",
+                    url,
                     json=records,
                     headers={
                         "Content-Type": "application/json",
