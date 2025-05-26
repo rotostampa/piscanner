@@ -29,7 +29,7 @@ def populate():
 
 @click.command(help="Cleanup old records from the database")
 @click.option(
-    "--days", default=1, type=float, help="Delete records older than this many days"
+    "--days", default=0, type=float, help="Delete records older than this many days"
 )
 def cleanup(days):
     seconds = int(days * 86400)  # Convert days to seconds
