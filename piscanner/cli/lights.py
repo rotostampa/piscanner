@@ -8,12 +8,7 @@ RED_PIN = 4
 
 
 def setup_gpio():
-
     import RPi.GPIO as GPIO
-
-    GPIO.setwarnings(False)
-    GPIO.cleanup()
-    GPIO.setwarnings(True)
 
     GPIO.setmode(GPIO.BCM)
 
@@ -23,6 +18,8 @@ def setup_gpio():
     # Ensure both are off
     GPIO.output(GREEN_PIN, GPIO.LOW)
     GPIO.output(RED_PIN, GPIO.LOW)
+
+    GPIO.setwarnings(True)
 
 
 def cleanup_gpio():
