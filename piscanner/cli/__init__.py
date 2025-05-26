@@ -13,6 +13,7 @@ for module, cmd in (
     ("piscanner.cli.start", "start"),
     ("piscanner.cli.noop", "noop"),
     ("piscanner.cli.populate", "populate"),
+    ("piscanner.cli.lights", "cleanup"),
     ("piscanner.cli.lights", "alert"),
     ("piscanner.cli.lights", "success"),
 ):
