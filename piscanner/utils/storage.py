@@ -20,8 +20,8 @@ def time_to_date(t):
         return datetime.datetime.fromtimestamp(t / 1000000)
 
 
-def timestamp():
-    return time.time() * 1000000
+def timestamp(seconds=0):
+    return (time.time() + seconds) * 1000000
 
 
 async def init():
@@ -65,3 +65,28 @@ async def read(limit=50):
         }
 
     await db.close()
+
+
+async def unsent_events_count(seconds_threshold=5):
+    """
+    Check if there are any records without an uploaded_timestamp.
+
+    Args:
+        seconds_threshold: Number of seconds from now to filter out recently created records (default: 5)
+
+    Returns:
+        bool: True if there are unsent records, False otherwise
+    """
+    cutoff_time = timestamp(seconds_threshold)
+
+    async with aiosqlite.connect(DB_FILE) as db:
+        cursor = await db.execute(
+            """
+            SELECT COUNT(*) FROM barcodes
+            WHERE uploaded_timestamp IS NULL
+            AND created_timestamp <= ?
+            """,
+            (cutoff_time,),
+        )
+        count = await cursor.fetchone()
+        return count[0]
