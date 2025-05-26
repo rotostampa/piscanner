@@ -74,12 +74,15 @@ async def handle_client(reader, writer):
     await writer.wait_closed()
 
 
-async def start_server(port):
-    server = await asyncio.start_server(handle_client, "0.0.0.0", port)
+async def start_server(
+    address="0.0.0.0",
+    port=9800,
+):
+    server = await asyncio.start_server(handle_client, address, port)
     print("Serving on http://{}:{}...".format(get_hostname(), port))
     async with server:
         await server.serve_forever()
 
 
-def server_coroutines(port=9999):
-    yield start_server, (), {"port": port}
+def server_coroutines(*args, **opts):
+    yield start_server, args, opts

@@ -1,7 +1,4 @@
 import asyncio
-from piscanner.utils.storage import read
-from piscanner.utils.machine import get_hostname
-
 
 
 async def start_sender():
@@ -10,5 +7,5 @@ async def start_sender():
         print("Sender is running...")
 
 
-def sender_coroutines():
-    yield start_sender, (), {}
+def sender_coroutines(*args, **opts):
+    yield start_sender, args, opts
