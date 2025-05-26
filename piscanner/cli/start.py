@@ -2,9 +2,12 @@ from importlib import import_module
 import traceback
 import asyncio
 import click
+import signal
+import sys
 from piscanner.utils.storage import init
 import warnings
 from piscanner.utils.machine import is_mac
+from piscanner.utils.lights import setup_gpio, cleanup_gpio
 
 
 def yield_coroutines():
@@ -31,14 +34,32 @@ async def restart_on_failure(coroutine_func, *args, **kwargs):
             await asyncio.sleep(1)
 
 
+def signal_handler(sig, frame):
+    """Handle signals like SIGINT (Ctrl+C) by cleaning up GPIO first"""
+    print("Cleaning up GPIO and exiting...")
+    cleanup_gpio()
+    sys.exit(0)
+
+
 async def main():
+
+    setup_gpio()
+
+    # Register signal handlers
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
     await init()
 
     for coroutine, args, opts in yield_coroutines():
         asyncio.create_task(restart_on_failure(coroutine, *args, **opts))
 
-    # Run forever
-    await asyncio.Event().wait()
+    try:
+        # Run forever
+        await asyncio.Event().wait()
+    finally:
+        # Ensure cleanup even if the event loop is stopped
+        cleanup_gpio()
 
 
 @click.command(help="Listen for barcode scanner")
