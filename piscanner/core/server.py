@@ -77,6 +77,7 @@ async def handle_client(reader, writer):
 async def start_server(
     address="0.0.0.0",
     port=9800,
+    verbose=False
 ):
     server = await asyncio.start_server(handle_client, address, port)
     print("Serving on http://{}:{}...".format(get_hostname(), port))

@@ -35,19 +35,21 @@ def cleanup_gpio():
 
 
 # The generic async function
-async def control_light(pin: int, duration: float = 1.0, wait: float = 1.0):
+async def control_light(pin: int, duration: float = 1.0, wait: float = 1.0, verbose = False):
 
     if not is_mac:
         import RPi.GPIO as GPIO
 
     async with lights_lock:
 
-        print(f"Turning ON light on GPIO{pin}")
+        if verbose:
+            print(f"💡 Turning ON light on GPIO{pin}")
         if not is_mac:
             GPIO.output(pin, GPIO.LOW)
         await asyncio.sleep(duration)
 
-        print(f"Turning OFF light on GPIO{pin}")
+        if verbose:
+            print(f"💡 Turning OFF light on GPIO{pin}")
         if not is_mac:
             GPIO.output(pin, GPIO.HIGH)
         await asyncio.sleep(wait)

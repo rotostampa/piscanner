@@ -41,7 +41,7 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 
-async def main():
+async def main(**kwargs):
 
     setup_gpio()
 
@@ -52,7 +52,7 @@ async def main():
     await init()
 
     for coroutine, args, opts in yield_coroutines():
-        asyncio.create_task(restart_on_failure(coroutine, *args, **opts))
+        asyncio.create_task(restart_on_failure(coroutine, *args, **opts, **kwargs))
 
     try:
         # Run forever
@@ -63,5 +63,6 @@ async def main():
 
 
 @click.command(help="Listen for barcode scanner")
-def start():
-    asyncio.run(main())
+@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+def start(verbose):
+    asyncio.run(main(verbose = verbose))
