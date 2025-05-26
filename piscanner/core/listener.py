@@ -130,7 +130,7 @@ def shifted_codes():
             yield ecodes[key_name], char
 
 
-def listener_coroutines():
+def listener_coroutines(*args, **opts):
 
     print("Starting on machine {}".format(get_hostname()))
 
@@ -142,4 +142,4 @@ def listener_coroutines():
         warnings.warn("No devices found")
 
     for device in devices:
-        yield print_events, (), {"device": device}
+        yield print_events, args, {"device": device, **opts}
