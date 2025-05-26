@@ -10,9 +10,11 @@ def setup_gpio():
 
     import RPi.GPIO as GPIO
 
-    GPIO.cleanup()
-    GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
+    GPIO.cleanup()
+    GPIO.setwarnings(True)
+
+    GPIO.setmode(GPIO.BCM)
 
     GPIO.setup(GREEN_PIN, GPIO.OUT)
     GPIO.setup(RED_PIN, GPIO.OUT)
