@@ -50,12 +50,28 @@ async def insert_barcode(barcode: str):
             await db.commit()
 
 
-async def read(limit=50):
+async def read(limit=50, not_uploaded_only=False):
+    """
+    Read records from the database.
+
+    Args:
+        limit: Maximum number of records to return (default: 50)
+        not_uploaded_only: If True, only return records where uploaded_timestamp is NULL (default: False)
+
+    Returns:
+        Generator yielding record dictionaries
+    """
     db = await aiosqlite.connect(DB_FILE)
-    cursor = await db.execute(
-        "SELECT id, barcode, created_timestamp, uploaded_timestamp FROM barcodes ORDER BY created_timestamp DESC LIMIT ?",
-        (limit,),
-    )
+
+    query = "SELECT id, barcode, created_timestamp, uploaded_timestamp FROM barcodes"
+
+    if not_uploaded_only:
+        query += " WHERE uploaded_timestamp IS NULL"
+
+    query += " ORDER BY created_timestamp DESC LIMIT ?"
+
+    cursor = await db.execute(query, (limit,),)
+
     async for id, barcode, created_timestamp, uploaded_timestamp in cursor:
         yield {
             "id": id,
