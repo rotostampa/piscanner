@@ -41,7 +41,7 @@ async def start_sender(verbose, sleep_duration=5):
                         print(f"✅ Successfully sent {len(records)} records")
                         if verbose:
                             for record in records:
-                                print("📤 Sent record: {record}".format(**record))
+                                print("📤 Sent record: {id}".format(**record))
 
                         # Mark records as uploaded in the database
                         updated_count = await mark_as_uploaded(
