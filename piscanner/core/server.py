@@ -9,6 +9,12 @@ async def handle_client(reader, writer, verbose=False):
     # Read and ignore client request
     await reader.read(1024)
 
+    context = dict(
+        hostname=get_hostname(),
+        time=datetime.datetime.now().time().strftime("%H:%M:%S"),
+        year=datetime.date.today().year,
+    )
+
     # Write response headers
     headers = (
         "HTTP/1.1 200 OK\r\n"
@@ -33,12 +39,12 @@ async def handle_client(reader, writer, verbose=False):
     <meta charset="UTF-8" />
     <meta http-equiv="refresh" content="3">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{uuid}</title>
+    <title>{hostname}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
 </head>
 <body class="container flow">
   <br/>
-  <h1 class="text-center">{uuid} <small style='color:gray;float:right;font-size:10px'>{now}</small></h1>
+  <h1 style='text-align:center'>{hostname} <small style='color:gray;font-size:10px;padding-left: 30px'>Last updated &rarr; {time}</small></h1>
   <table>
     <thead>
       <tr>
@@ -47,7 +53,7 @@ async def handle_client(reader, writer, verbose=False):
     </thead>
     <tbody>
 """.format(
-            uuid=get_hostname(), now=datetime.datetime.now()
+            **context
         )
     )
 
@@ -67,7 +73,8 @@ async def handle_client(reader, writer, verbose=False):
         )
 
     # Write closing tags
-    await write_chunk("</tbody></table></main></body></html>")
+    await write_chunk("</tbody></table><footer style='text-align:center;color:gray'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>")
+
 
     # Last chunk
     writer.write(b"0\r\n\r\n")
