@@ -53,6 +53,7 @@ async def init():
                 settings_dict={
                     "PISCANNER_SERVER_TOKEN": "",
                     "PISCANNER_SERVER_HOST": "https://rotostampa.com",
+                    "PISCANNER_SERVER_PATH": "/api/storage/piscanner-notify-barcode/",
                     "PISCANNER_SERVER_STEP": "0",
                 },
                 overwrite_settings=False,

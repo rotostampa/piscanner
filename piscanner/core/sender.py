@@ -9,7 +9,7 @@ import ssl
 async def start_sender(verbose, sleep_duration=5):
     # API endpoint details
     API_HOST = os.getenv("PISCANNER_SERVER_HOST") or "sprint24.com"
-    API_PATH = "/api/piscanner-notify-barcode/"
+    API_PATH = "/api/storage/piscanner-notify-barcode/"
     API_KEY = os.getenv("PISCANNER_API_KEY")
 
     hostname = get_hostname()
