@@ -55,7 +55,7 @@ async def db_readonly(path = DB_FILE):
         yield db
 
 
-def time_to_date(t):
+def timestamp_to_datetime(t):
     """
     Convert a UTC timestamp to a datetime in the local timezone.
 
@@ -153,8 +153,8 @@ async def read(limit=50, not_uploaded_only=False):
             yield data(
                 id= id,
                 barcode= barcode,
-                created_timestamp= time_to_date(created_timestamp),
-                uploaded_timestamp= time_to_date(uploaded_timestamp),
+                created_timestamp= timestamp_to_datetime(created_timestamp),
+                uploaded_timestamp= timestamp_to_datetime(uploaded_timestamp),
             )
 
 
