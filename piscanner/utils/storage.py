@@ -1,6 +1,7 @@
 import aiosqlite
 import time
 import datetime
+from datetime import timezone
 import asyncio
 from piscanner.utils.machine import is_mac
 import os
@@ -55,12 +56,32 @@ async def db_readonly(path = DB_FILE):
 
 
 def time_to_date(t):
+    """
+    Convert a UTC timestamp to a datetime in the local timezone.
+
+    Args:
+        t: UTC timestamp stored in the database
+
+    Returns:
+        datetime: Datetime object in local timezone
+    """
     if t:
-        return datetime.datetime.fromtimestamp(t)
+        # Convert UTC timestamp to datetime with local timezone
+        return  datetime.datetime.fromtimestamp(t, tz=timezone.utc).astimezone()  # Convert to local timezone
 
 
 def timestamp(seconds=0):
-    return (time.time() - seconds)
+    """
+    Get the current UTC timestamp, optionally offset by a number of seconds.
+
+    Args:
+        seconds: Number of seconds to subtract from current time
+
+    Returns:
+        float: UTC timestamp
+    """
+    # Get current UTC timestamp
+    return datetime.datetime.now(timezone.utc).timestamp() - seconds
 
 
 async def init():
