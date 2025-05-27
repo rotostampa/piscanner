@@ -51,11 +51,9 @@ async def init():
             # Use the existing connection for setting defaults
             await _set_setting_internal(
                 settings_dict={
-                    "server_url": "https://example.com/api",
-                    "scan_timeout": "5",
-                    "theme": "light",
-                    "auto_upload": "true",
-                    "scan_sound_enabled": "true",
+                    "PISCANNER_SERVER_TOKEN": "",
+                    "PISCANNER_SERVER_HOST": "https://rotostampa.com",
+                    "PISCANNER_SERVER_STEP": "0",
                 },
                 overwrite_settings=False,
                 db_connection=db
