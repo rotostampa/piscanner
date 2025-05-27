@@ -38,6 +38,15 @@ async def init():
                 )
                 """
             )
+            await db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS settings (
+                    key TEXT PRIMARY KEY NOT NULL,
+                    value TEXT NOT NULL,
+                    create_timestamp REAL NOT NULL
+                )
+                """
+            )
             await db.commit()
 
 
@@ -176,3 +185,60 @@ async def mark_as_uploaded(record_ids):
             updated_count = cursor.rowcount
             await db.commit()
             return updated_count
+
+
+
+
+
+
+
+async def get_all_settings():
+    """
+    Get all settings.
+
+    Returns:
+        dict: Dictionary of all settings (key-value pairs)
+    """
+    async with aiosqlite.connect(DB_FILE) as db:
+        cursor = await db.execute(
+            "SELECT key, value FROM settings ORDER BY key"
+        )
+
+        settings = {}
+        async for key, value in cursor:
+            settings[key] = value
+
+        return settings
+            (key,),
+        )
+        row = await cursor.fetchone()
+        return row[0] if row else None
+
+
+async def set_setting(key, value):
+    """
+    Set a setting value by key. If the key already exists, it will be updated.
+
+    Args:
+        key: The setting key to set
+        value: The setting value to store
+
+    Returns:
+        bool: True if successful
+    """
+    current_time = timestamp()
+
+    async with db_lock:
+        async with aiosqlite.connect(DB_FILE) as db:
+            await db.execute(
+                """
+                INSERT INTO settings (key, value, create_timestamp)
+                VALUES (?, ?, ?)
+                ON CONFLICT(key) DO UPDATE SET
+                    value = excluded.value,
+                    create_timestamp = excluded.create_timestamp
+                """,
+                (key, value, current_time),
+            )
+            await db.commit()
+            return True
