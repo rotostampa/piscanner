@@ -29,7 +29,7 @@ async def db_transaction(path = DB_FILE, lock = asyncio.Lock()):
             await db.execute("INSERT INTO table VALUES (?)", (value,))
     """
     async with lock:
-        async with aiosqlite.connect(path) as db:
+        async with db_readonly(path = path) as db:
             try:
                 yield db
                 await db.commit()
