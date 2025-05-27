@@ -66,7 +66,7 @@ async def handle_client(reader, writer, verbose=False):
             <td>{id}</td>
             <td>{barcode}</td>
             <td>{created_timestamp}</td>
-            <td>{uploaded_timestamp}</td>
+            <td>{completed_timestamp}</td>
             <td>{status}</td>
             </tr>
         """.format(

@@ -92,7 +92,7 @@ async def init():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 barcode TEXT NOT NULL,
                 created_timestamp REAL NOT NULL,
-                uploaded_timestamp REAL,
+                completed_timestamp REAL,
                 status TEXT NOT NULL DEFAULT 'LOCAL'
             );
 
@@ -132,16 +132,16 @@ async def read(limit=50, not_uploaded_only=False):
 
     Args:
         limit: Maximum number of records to return (default: 50)
-        not_uploaded_only: If True, only return records where uploaded_timestamp is NULL (default: False)
+        not_uploaded_only: If True, only return records where completed_timestamp is NULL (default: False)
 
     Returns:
         Generator yielding record dictionaries
     """
     async with db_readonly() as db:
-        query = "SELECT id, barcode, created_timestamp, uploaded_timestamp, status FROM barcodes"
+        query = "SELECT id, barcode, created_timestamp, completed_timestamp, status FROM barcodes"
 
         if not_uploaded_only:
-            query += " WHERE uploaded_timestamp IS NULL"
+            query += " WHERE completed_timestamp IS NULL"
 
         query += " ORDER BY created_timestamp DESC LIMIT ?"
 
@@ -150,19 +150,19 @@ async def read(limit=50, not_uploaded_only=False):
             (limit,),
         )
 
-        async for id, barcode, created_timestamp, uploaded_timestamp, status in cursor:
+        async for id, barcode, created_timestamp, completed_timestamp, status in cursor:
             yield data(
                 id=id,
                 barcode=barcode,
                 created_timestamp=timestamp_to_datetime(created_timestamp),
-                uploaded_timestamp=timestamp_to_datetime(uploaded_timestamp),
+                completed_timestamp=timestamp_to_datetime(completed_timestamp),
                 status=status,
             )
 
 
 async def unsent_events_count(seconds=5):
     """
-    Check if there are any records without an uploaded_timestamp.
+    Check if there are any records without an completed_timestamp.
 
     Args:
         seconds: Number of seconds from now to filter out recently created records (default: 5)
@@ -176,7 +176,7 @@ async def unsent_events_count(seconds=5):
         cursor = await db.execute(
             """
             SELECT COUNT(*) FROM barcodes
-            WHERE uploaded_timestamp IS NULL
+            WHERE completed_timestamp IS NULL
             AND created_timestamp <= ?
             """,
             (cutoff_time,),
@@ -207,7 +207,7 @@ async def cleanup_db(seconds=86400):
 
 async def mark_as_uploaded(record_ids):
     """
-    Mark the specified records as uploaded by setting their uploaded_timestamp and status.
+    Mark the specified records as uploaded by setting their completed_timestamp and status.
 
     Args:
         record_ids: List of record IDs to mark as uploaded
@@ -223,7 +223,7 @@ async def mark_as_uploaded(record_ids):
 
     async with db_transaction() as db:
         cursor = await db.execute(
-            f"UPDATE barcodes SET uploaded_timestamp = ?, status = 'UPLOADED' WHERE id IN ({placeholders})",
+            f"UPDATE barcodes SET completed_timestamp = ?, status = 'UPLOADED' WHERE id IN ({placeholders})",
             (timestamp(), *record_ids),
         )
         return cursor.rowcount
