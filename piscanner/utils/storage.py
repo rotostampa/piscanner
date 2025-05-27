@@ -6,15 +6,52 @@ from piscanner.utils.machine import is_mac
 import os
 from itertools import repeat
 from piscanner.utils.datastructures import data
+from contextlib import asynccontextmanager
 
-db_lock = asyncio.Lock()
 
-DB_FILE = "piscanner-v5.db"
+
+DB_FILE = "piscanner-v6.db"
 
 if is_mac:
     DB_FILE = os.path.join(os.path.dirname(__file__), DB_FILE)
 else:
     DB_FILE = os.path.join(os.path.expanduser("~"), DB_FILE)
+
+
+@asynccontextmanager
+async def db_transaction(path = DB_FILE, lock = asyncio.Lock()):
+    """
+    Async context manager that acquires the database lock, connects to the database,
+    and automatically commits the transaction when exiting the context.
+
+    Usage:
+        async with db_transaction() as db:
+            await db.execute("INSERT INTO table VALUES (?)", (value,))
+    """
+    async with lock:
+        async with aiosqlite.connect(path) as db:
+            try:
+                yield db
+                await db.commit()
+            except Exception as e:
+                await db.rollback()
+                raise e
+
+
+@asynccontextmanager
+async def db_readonly(path = DB_FILE):
+    """
+    Async context manager that connects to the database in read-only mode
+    without acquiring the lock or committing changes.
+
+    Use this for read-only operations that don't modify the database.
+
+    Usage:
+        async with db_readonly() as db:
+            cursor = await db.execute("SELECT * FROM table")
+    """
+    async with aiosqlite.connect(path) as db:
+        yield db
 
 
 def time_to_date(t):
@@ -27,50 +64,44 @@ def timestamp(seconds=0):
 
 
 async def init():
-    async with db_lock:
-        async with aiosqlite.connect(DB_FILE) as db:
-            await db.executescript(
-                """
-                CREATE TABLE IF NOT EXISTS barcodes (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    barcode TEXT NOT NULL,
-                    created_timestamp REAL NOT NULL,
-                    uploaded_timestamp REAL
-                );
+    async with db_transaction() as db:
+        await db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS barcodes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                barcode TEXT NOT NULL,
+                created_timestamp REAL NOT NULL,
+                uploaded_timestamp REAL
+            );
 
-                CREATE TABLE IF NOT EXISTS settings (
-                    key TEXT PRIMARY KEY NOT NULL,
-                    value TEXT NOT NULL,
-                    create_timestamp REAL NOT NULL
-                );
-                """
-            )
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY NOT NULL,
+                value TEXT NOT NULL,
+                create_timestamp REAL NOT NULL
+            );
+            """
+        )
 
-            # Set default settings while we still have the connection and lock
-
-            # Use the existing connection for setting defaults
-            await _set_setting_internal(
-                settings_dict={
-                    "PISCANNER_SERVER_TOKEN": "",
-                    "PISCANNER_SERVER_HOST": "https://rotostampa.com",
-                    "PISCANNER_SERVER_PATH": "/api/storage/piscanner-notify-barcode/",
-                    "PISCANNER_SERVER_STEP": "0",
-                },
-                overwrite_settings=False,
-                db_connection=db
-            )
-
-            await db.commit()
+        # Set default settings while we still have the connection and lock
+        # Use the existing connection for setting defaults
+        await _set_setting_internal(
+            settings_dict={
+                "PISCANNER_SERVER_TOKEN": "",
+                "PISCANNER_SERVER_HOST": "https://rotostampa.com",
+                "PISCANNER_SERVER_PATH": "/api/storage/piscanner-notify-barcode/",
+                "PISCANNER_SERVER_STEP": "0",
+            },
+            overwrite_settings=False,
+            db_connection=db
+        )
 
 
 async def insert_barcode(barcode: str):
-    async with db_lock:
-        async with aiosqlite.connect(DB_FILE) as db:
-            await db.execute(
-                "INSERT INTO barcodes (barcode, created_timestamp) VALUES (?, ?)",
-                (barcode, timestamp()),
-            )
-            await db.commit()
+    async with db_transaction() as db:
+        await db.execute(
+            "INSERT INTO barcodes (barcode, created_timestamp) VALUES (?, ?)",
+            (barcode, timestamp()),
+        )
 
 
 async def read(limit=50, not_uploaded_only=False):
@@ -84,29 +115,26 @@ async def read(limit=50, not_uploaded_only=False):
     Returns:
         Generator yielding record dictionaries
     """
-    db = await aiosqlite.connect(DB_FILE)
+    async with db_readonly() as db:
+        query = "SELECT id, barcode, created_timestamp, uploaded_timestamp FROM barcodes"
 
-    query = "SELECT id, barcode, created_timestamp, uploaded_timestamp FROM barcodes"
+        if not_uploaded_only:
+            query += " WHERE uploaded_timestamp IS NULL"
 
-    if not_uploaded_only:
-        query += " WHERE uploaded_timestamp IS NULL"
+        query += " ORDER BY created_timestamp DESC LIMIT ?"
 
-    query += " ORDER BY created_timestamp DESC LIMIT ?"
-
-    cursor = await db.execute(
-        query,
-        (limit,),
-    )
-
-    async for id, barcode, created_timestamp, uploaded_timestamp in cursor:
-        yield data(
-            id= id,
-            barcode= barcode,
-            created_timestamp= time_to_date(created_timestamp),
-            uploaded_timestamp= time_to_date(uploaded_timestamp),
+        cursor = await db.execute(
+            query,
+            (limit,),
         )
 
-    await db.close()
+        async for id, barcode, created_timestamp, uploaded_timestamp in cursor:
+            yield data(
+                id= id,
+                barcode= barcode,
+                created_timestamp= time_to_date(created_timestamp),
+                uploaded_timestamp= time_to_date(uploaded_timestamp),
+            )
 
 
 async def unsent_events_count(seconds=5):
@@ -121,7 +149,7 @@ async def unsent_events_count(seconds=5):
     """
     cutoff_time = timestamp(seconds)  # Negative seconds to exclude recent records
 
-    async with aiosqlite.connect(DB_FILE) as db:
+    async with db_readonly() as db:
         cursor = await db.execute(
             """
             SELECT COUNT(*) FROM barcodes
@@ -146,13 +174,11 @@ async def cleanup_db(seconds=86400):
     """
     cutoff_time = timestamp(seconds)  # Negative seconds to go back in time
 
-    async with db_lock:
-        async with aiosqlite.connect(DB_FILE) as db:
-            cursor = await db.execute(
-                "DELETE FROM barcodes WHERE created_timestamp < ?", (cutoff_time,)
-            )
-            await db.commit()
-            return cursor.rowcount
+    async with db_transaction() as db:
+        cursor = await db.execute(
+            "DELETE FROM barcodes WHERE created_timestamp < ?", (cutoff_time,)
+        )
+        return cursor.rowcount
 
 
 async def mark_as_uploaded(record_ids):
@@ -173,14 +199,12 @@ async def mark_as_uploaded(record_ids):
     # Create placeholders for the SQL query using itertools.repeat
     placeholders = ",".join(repeat("?", len(record_ids)))
 
-    async with db_lock:
-        async with aiosqlite.connect(DB_FILE) as db:
-            cursor = await db.execute(
-                f"UPDATE barcodes SET uploaded_timestamp = ? WHERE id IN ({placeholders})",
-                (current_time, *record_ids),
-            )
-            await db.commit()
-            return cursor.rowcount
+    async with db_transaction() as db:
+        cursor = await db.execute(
+            f"UPDATE barcodes SET uploaded_timestamp = ? WHERE id IN ({placeholders})",
+            (current_time, *record_ids),
+        )
+        return cursor.rowcount
 
 
 async def get_settings():
@@ -190,7 +214,7 @@ async def get_settings():
     Returns:
         dict: Dictionary of all settings (key-value pairs)
     """
-    async with aiosqlite.connect(DB_FILE) as db:
+    async with db_readonly() as db:
         cursor = await db.execute("SELECT key, value FROM settings ORDER BY key")
 
         settings = data()
@@ -262,12 +286,10 @@ async def set_setting(**settings_dict):
     if not settings_dict:
         return 0
 
-    async with db_lock:
-        async with aiosqlite.connect(DB_FILE) as db:
-            result = await _set_setting_internal(
-                settings_dict=settings_dict,
-                overwrite_settings=True,
-                db_connection=db
-            )
-            await db.commit()
-            return result
+    async with db_transaction() as db:
+        result = await _set_setting_internal(
+            settings_dict=settings_dict,
+            overwrite_settings=True,
+            db_connection=db
+        )
+        return result
