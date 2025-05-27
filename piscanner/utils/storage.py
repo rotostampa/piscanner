@@ -209,10 +209,6 @@ async def get_all_settings():
             settings[key] = value
 
         return settings
-            (key,),
-        )
-        row = await cursor.fetchone()
-        return row[0] if row else None
 
 
 async def set_setting(key, value):
