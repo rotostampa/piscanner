@@ -194,15 +194,13 @@ async def mark_as_uploaded(record_ids):
     if not record_ids:
         return 0
 
-    current_time = timestamp()
-
     # Create placeholders for the SQL query using itertools.repeat
     placeholders = ",".join(repeat("?", len(record_ids)))
 
     async with db_transaction() as db:
         cursor = await db.execute(
             f"UPDATE barcodes SET uploaded_timestamp = ? WHERE id IN ({placeholders})",
-            (current_time, *record_ids),
+            (timestamp(), *record_ids),
         )
         return cursor.rowcount
 
@@ -287,9 +285,8 @@ async def set_setting(**settings_dict):
         return 0
 
     async with db_transaction() as db:
-        result = await _set_setting_internal(
+        return await _set_setting_internal(
             settings_dict=settings_dict,
             overwrite_settings=True,
             db_connection=db
         )
-        return result
