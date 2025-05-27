@@ -6,8 +6,8 @@ import random
 import string
 
 
-def barcode():
-    return "44X{}".format("".join(random.choices(string.ascii_letters, k=8)).lower())
+def barcode(prefix='44'):
+    return "{}X{}".format(prefix, "".join(random.choices(string.ascii_letters, k=8)).lower())
 
 
 async def populate_initial_data():
@@ -16,6 +16,8 @@ async def populate_initial_data():
     for i in range(10):
         await insert_barcode(barcode())
 
+    for i in range(3):
+        await insert_barcode(barcode(prefix = '4{}'.format(i)))
 
 async def cleanup_database(seconds):
     await init()

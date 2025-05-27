@@ -91,10 +91,12 @@ async def handle_remote_barcodes(barcodes, verbose, sleep_duration=5):
 
 async def handle_settings_barcodes(barcodes, **opts):
     print("rewrite_settings", barcodes, opts)
+    return {info.barcode: "SettingChanged" for info in barcodes}
 
 
 async def handle_invalid_barcodes(barcodes, **opts):
     print("invalid_barcodes", barcodes, opts)
+    return {info.barcode: "NotOrder" for info in barcodes}
 
 
 matchers = (
