@@ -6,7 +6,7 @@ import random
 import string
 
 
-def barcode(prefix="44"):
+def barcode(prefix):
     return "{}X{}".format(
         prefix, "".join(random.choices(string.ascii_letters, k=8)).lower()
     )
@@ -22,7 +22,7 @@ async def populate_initial_data(barcodes):
     else:
         # Generate random barcodes as before
         for i in range(10):
-            await insert_barcode(barcode())
+            await insert_barcode(barcode("44"))
 
         for i in range(3):
             await insert_barcode(barcode(prefix="4{}".format(i)))
