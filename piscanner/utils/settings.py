@@ -1,5 +1,5 @@
 default_settings = {
-    "TOKEN": "",
+    "TOKEN": "supersecrettoken",
     "HOST": "https://rotostampa.com",
     "PATH": "/api/storage/piscanner-notify-barcode/",
     "STEP": "0",

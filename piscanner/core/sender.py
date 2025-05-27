@@ -1,8 +1,7 @@
 import asyncio
-import os
 import aiohttp
 from collections import defaultdict
-from piscanner.utils.storage import read, set_status_mapping, set_setting
+from piscanner.utils.storage import read, set_status_mapping, set_setting, get_settings
 from piscanner.utils.machine import get_hostname
 import ssl
 import re
@@ -10,84 +9,64 @@ from piscanner.utils.datastructures import data
 from piscanner.utils.storage import default_settings
 
 
-async def handle_remote_barcodes(barcodes, verbose, sleep_duration=5):
+async def handle_remote_barcodes(barcodes, verbose):
     # API endpoint details
-    API_HOST = os.getenv("PISCANNER_SERVER_HOST") or "sprint24.com"
-    API_PATH = "/api/storage/piscanner-notify-barcode/"
-    API_KEY = os.getenv("PISCANNER_API_KEY")
+    settings = await get_settings()
 
     hostname = get_hostname()
 
     print("handle_remote_barcodes", barcodes)
 
-    return {info.barcode: "Ok" for info in barcodes}
+    # return {info.barcode: "Ok" for info in barcodes}
 
-    if not API_KEY:
-        if verbose:
-            print("⚠️ PISCANNER_API_KEY environment variable not set")
+    url = "{HOST}{PATH}".format(**settings)
 
-    while True:
-        # Collect unsent records
-        records = {}
-        async for record in read(limit=100, not_uploaded_only=True):
-            records[record.id] = record.barcode
+    # Build form data
+    form_data = [("hostname", hostname)]
+    for info in barcodes:
+        form_data.append(("barcode", info.barcode))
 
-        # If we have records to send
-        if records:
-            url = f"https://{API_HOST}{API_PATH}"
+    print(f"📤 Sending {len(barcodes)} barcodes to {url}...")
 
-            # Build form data
-            form_data = [("hostname", hostname)]
-            for barcode in records.values():
-                form_data.append(("barcode", barcode))
+    if verbose:
 
-            print(f"📤 Sending {len(records)} barcodes to {url}...")
+        for info in barcodes:
+            print(f"📤 Sent barcode: {info.barcode}")
 
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE  # Disable cert verification
+
+    # Send the request asynchronously
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.post(
+                url,
+                data=form_data,
+                headers={
+                    "Authorization": "Bearer {TOKEN}".format(**settings),
+                },
+                ssl=ssl_context,
+            ) as response:
+                if response.status == 200:
+                    print(f"✅ Successfully sent {len(barcodes)} barcodes")
+
+                    return {info.barcode: "Accepted" for info in barcodes}
+
+                if verbose:
+                    print(
+                        f"⚠️ Error sending barcodes: {response.status} {response.reason}"
+                    )
+
+                return {
+                    info.barcode: "HTTPError{}".format(response.status)
+                    for info in barcodes
+                }
+        except aiohttp.client_exceptions.ClientConnectorError as e:
             if verbose:
+                print(f"⚠️ Error sending barcodes: {e}")
 
-                for barcode in records.values():
-                    print(f"📤 Sent barcode: {barcode}")
-
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE  # Disable cert verification
-
-            # Send the request asynchronously
-            async with aiohttp.ClientSession() as session:
-                try:
-                    async with session.post(
-                        url,
-                        data=form_data,
-                        headers={
-                            "Authorization": f"Bearer {API_KEY}",
-                        },
-                        ssl=ssl_context,
-                    ) as response:
-                        if response.status == 200:
-                            print(f"✅ Successfully sent {len(records)} barcodes")
-
-                            # Mark records as uploaded in the database
-                            updated_count = await set_status_mapping(
-                                tuple(records.keys())
-                            )
-
-                            if verbose and updated_count != len(records):
-                                print(
-                                    f"⚠️ Only updated {updated_count} of {len(records)} barcodes"
-                                )
-                        elif verbose:
-                            print(
-                                f"⚠️ Error sending barcodes: {response.status} {response.reason}"
-                            )
-                except aiohttp.client_exceptions.ClientConnectorError as e:
-                    if verbose:
-                        print(f"⚠️ Error sending barcodes: {e}")
-
-        elif verbose:
-            print("📤 No barcodes to send")
-
-        # Wait before next attempt
-        await asyncio.sleep(sleep_duration)
+            return {info.barcode: "ConnectionError" for info in barcodes}
 
 
 async def handle_settings_barcodes(barcodes, **opts):
