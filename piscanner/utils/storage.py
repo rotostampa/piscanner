@@ -322,7 +322,7 @@ async def _set_setting_internal(settings_dict, db_connection, overwrite_settings
     return cursor.rowcount
 
 
-async def set_setting(**settings_dict):
+async def set_setting(settings_dict):
     """
     Set multiple settings at once.
 
