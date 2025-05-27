@@ -5,6 +5,7 @@ import asyncio
 from piscanner.utils.machine import is_mac
 import os
 from itertools import repeat
+from piscanner.utils.datastructures import data
 
 db_lock = asyncio.Lock()
 
@@ -28,25 +29,38 @@ def timestamp(seconds=0):
 async def init():
     async with db_lock:
         async with aiosqlite.connect(DB_FILE) as db:
-            await db.execute(
+            await db.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS barcodes (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     barcode TEXT NOT NULL,
                     created_timestamp REAL NOT NULL,
                     uploaded_timestamp REAL
-                )
-                """
-            )
-            await db.execute(
-                """
+                );
+
                 CREATE TABLE IF NOT EXISTS settings (
                     key TEXT PRIMARY KEY NOT NULL,
                     value TEXT NOT NULL,
                     create_timestamp REAL NOT NULL
-                )
+                );
                 """
             )
+
+            # Set default settings while we still have the connection and lock
+
+            # Use the existing connection for setting defaults
+            await _set_setting_internal(
+                settings_dict={
+                    "server_url": "https://example.com/api",
+                    "scan_timeout": "5",
+                    "theme": "light",
+                    "auto_upload": "true",
+                    "scan_sound_enabled": "true",
+                },
+                overwrite_settings=False,
+                db_connection=db
+            )
+
             await db.commit()
 
 
@@ -86,12 +100,12 @@ async def read(limit=50, not_uploaded_only=False):
     )
 
     async for id, barcode, created_timestamp, uploaded_timestamp in cursor:
-        yield {
-            "id": id,
-            "barcode": barcode,
-            "created_timestamp": time_to_date(created_timestamp),
-            "uploaded_timestamp": time_to_date(uploaded_timestamp),
-        }
+        yield data(
+            id= id,
+            barcode= barcode,
+            created_timestamp= time_to_date(created_timestamp),
+            uploaded_timestamp= time_to_date(uploaded_timestamp),
+        )
 
     await db.close()
 
@@ -118,22 +132,7 @@ async def unsent_events_count(seconds=5):
             (cutoff_time,),
         )
         count = await cursor.fetchone()
-        return count[0]
-
-
-async def has_unsent_events(seconds=5):
-    """
-    Check if there are any records without an uploaded_timestamp.
-
-    Args:
-        seconds: Number of seconds from now to filter out recently created records (default: 5)
-
-    Returns:
-        bool: True if there are unsent records, False otherwise
-    """
-    count = await unsent_events_count(seconds)
-    return count > 0
-
+        return next(count)
 
 async def cleanup_db(seconds=86400):
     """
@@ -153,9 +152,8 @@ async def cleanup_db(seconds=86400):
             cursor = await db.execute(
                 "DELETE FROM barcodes WHERE created_timestamp < ?", (cutoff_time,)
             )
-            deleted_count = cursor.rowcount
             await db.commit()
-            return deleted_count
+            return cursor.rowcount
 
 
 async def mark_as_uploaded(record_ids):
@@ -182,9 +180,8 @@ async def mark_as_uploaded(record_ids):
                 f"UPDATE barcodes SET uploaded_timestamp = ? WHERE id IN ({placeholders})",
                 (current_time, *record_ids),
             )
-            updated_count = cursor.rowcount
             await db.commit()
-            return updated_count
+            return cursor.rowcount
 
 
 async def get_settings():
@@ -197,45 +194,81 @@ async def get_settings():
     async with aiosqlite.connect(DB_FILE) as db:
         cursor = await db.execute("SELECT key, value FROM settings ORDER BY key")
 
-        settings = {}
+        settings = data()
         async for key, value in cursor:
             settings[key] = value
 
         return settings
 
 
-async def set_settings(**kwargs):
+async def _set_setting_internal(settings_dict, db_connection, overwrite_settings = True):
     """
-    Set multiple settings at once. If a key already exists, it will be updated.
+    Internal helper function to set settings using an existing connection.
 
     Args:
-        **kwargs: Key-value pairs to set in the database
+        settings_dict: Dictionary of settings to set
+        overwrite_settings: Whether to overwrite existing settings
+        db_connection: Database connection to use
 
     Returns:
         int: Number of records updated/inserted
     """
-    if not kwargs:
+    if not settings_dict:
         return 0
 
     current_time = timestamp()
+    placeholders = ",".join(repeat("(?, ?, ?)", len(settings_dict)))
+    params = tuple(
+        param
+        for key, value in settings_dict.items()
+        for param in (key, value, current_time)
+    )
 
-    # Create placeholders and params directly with list comprehension
-    placeholders = ",".join(repeat("(?, ?, ?)", len(kwargs)))
+    if overwrite_settings:
+        # If overwrite is enabled, update existing settings
+        cursor = await db_connection.execute(
+            f"""
+            INSERT INTO settings (key, value, create_timestamp)
+            VALUES {placeholders}
+            ON CONFLICT(key) DO UPDATE SET
+                value = excluded.value,
+                create_timestamp = excluded.create_timestamp
+            """,
+            params,
+        )
+    else:
+        # If overwrite is disabled, ignore conflicts (keep existing settings)
+        cursor = await db_connection.execute(
+            f"""
+            INSERT INTO settings (key, value, create_timestamp)
+            VALUES {placeholders}
+            ON CONFLICT(key) DO NOTHING
+            """,
+            params,
+        )
+    return cursor.rowcount
+
+
+async def set_setting(**settings_dict):
+    """
+    Set multiple settings at once.
+
+    Args:
+        settings_dict: Dictionary of settings (key-value pairs) to set in the database
+        overwrite_settings: If True, existing settings will be updated; if False, existing settings will be kept
+
+    Returns:
+        int: Number of records updated/inserted
+    """
+    if not settings_dict:
+        return 0
+
     async with db_lock:
         async with aiosqlite.connect(DB_FILE) as db:
-            cursor = await db.execute(
-                f"""
-                INSERT INTO settings (key, value, create_timestamp)
-                VALUES {placeholders}
-                ON CONFLICT(key) DO UPDATE SET
-                    value = excluded.value,
-                    create_timestamp = excluded.create_timestamp
-                """,
-                tuple(
-                    param
-                    for key, value in kwargs.items()
-                    for param in (key, value, current_time)
-                ),
+            result = await _set_setting_internal(
+                settings_dict=settings_dict,
+                overwrite_settings=True,
+                db_connection=db
             )
             await db.commit()
-            return cursor.rowcount
+            return result
