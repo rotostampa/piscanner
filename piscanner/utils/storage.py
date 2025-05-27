@@ -77,7 +77,7 @@ async def init():
             CREATE TABLE IF NOT EXISTS settings (
                 key TEXT PRIMARY KEY NOT NULL,
                 value TEXT NOT NULL,
-                create_timestamp REAL NOT NULL
+                created_timestamp REAL NOT NULL
             );
             """
         )
@@ -249,11 +249,11 @@ async def _set_setting_internal(settings_dict, db_connection, overwrite_settings
         # If overwrite is enabled, update existing settings
         cursor = await db_connection.execute(
             f"""
-            INSERT INTO settings (key, value, create_timestamp)
+            INSERT INTO settings (key, value, created_timestamp)
             VALUES {placeholders}
             ON CONFLICT(key) DO UPDATE SET
                 value = excluded.value,
-                create_timestamp = excluded.create_timestamp
+                created_timestamp = excluded.created_timestamp
             """,
             params,
         )
@@ -261,7 +261,7 @@ async def _set_setting_internal(settings_dict, db_connection, overwrite_settings
         # If overwrite is disabled, ignore conflicts (keep existing settings)
         cursor = await db_connection.execute(
             f"""
-            INSERT INTO settings (key, value, create_timestamp)
+            INSERT INTO settings (key, value, created_timestamp)
             VALUES {placeholders}
             ON CONFLICT(key) DO NOTHING
             """,
