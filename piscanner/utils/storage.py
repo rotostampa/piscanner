@@ -130,7 +130,7 @@ async def unsent_events_count(seconds=5):
             (cutoff_time,),
         )
         count = await cursor.fetchone()
-        return next(count)
+        return count[0]
 
 async def cleanup_db(seconds=86400):
     """
