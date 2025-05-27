@@ -205,28 +205,56 @@ async def cleanup_db(seconds=86400):
         return cursor.rowcount
 
 
-async def mark_as_uploaded(record_ids):
+async def set_status_mapping(status_to_ids_mapping):
     """
-    Mark the specified records as uploaded by setting their completed_timestamp and status.
+    Mark the specified records with their corresponding statuses using executescript.
+    This performs all updates in a single transaction for better performance.
 
     Args:
-        record_ids: List of record IDs to mark as uploaded
+        status_to_ids_mapping: Mapping of {status: [record_ids]} to update
 
     Returns:
-        int: Number of records updated
+        int: Total number of records updated
     """
-    if not record_ids:
+    if not status_to_ids_mapping:
         return 0
 
-    # Create placeholders for the SQL query using itertools.repeat
-    placeholders = ",".join(repeat("?", len(record_ids)))
+    current_time = timestamp()
 
+    # Build a SQL script with all updates
+    script_parts = []
+    total_records = 0
+
+    for status, record_ids in status_to_ids_mapping.items():
+        if not record_ids:
+            continue
+
+        # Create comma-separated list of record IDs for this status
+        id_list = ",".join(str(id) for id in record_ids)
+        if id_list:
+            # Use proper SQL escaping for the status string
+            # SQLite uses single quotes for string literals
+            escaped_status = status.replace("'", "''")
+
+            script_parts.append(
+                f"UPDATE barcodes SET completed_timestamp = {current_time}, "
+                f"status = '{escaped_status}' WHERE id IN ({id_list});"
+            )
+            total_records += len(record_ids)
+
+    if not script_parts:
+        return 0
+
+    sql_script = "\n".join(script_parts)
+
+    print("SQL")
+    print(sql_script)
+
+    # Execute all updates in a single transaction
     async with db_transaction() as db:
-        cursor = await db.execute(
-            f"UPDATE barcodes SET completed_timestamp = ?, status = 'UPLOADED' WHERE id IN ({placeholders})",
-            (timestamp(), *record_ids),
-        )
-        return cursor.rowcount
+        await db.executescript(sql_script)
+
+    return total_records
 
 
 async def get_settings():
