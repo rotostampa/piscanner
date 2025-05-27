@@ -6,7 +6,7 @@ from piscanner.utils.lights import setup_gpio, cleanup_gpio, flash_green, flash_
 
 async def test_lights():
     for func in (flash_red, flash_green, flash_yellow):
-        await func(duration=1, wait=1, verbose=True)
+        await func(duration=0.2, wait=0.1, verbose=True)
 
 
 @click.command(help="Test wait")
