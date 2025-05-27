@@ -49,7 +49,7 @@ async def handle_client(reader, writer, verbose=False):
     <caption style="font-weight: bold; font-size: 1.2em; margin-bottom: 10px; text-align: left;">Barcodes</caption>
     <thead>
       <tr>
-        <th>ID</th><th>Barcode</th><th>Create Timestamp</th><th>Uploaded Timestamp</th><th>Status</th>
+        <th>ID</th><th>Barcode</th><th>Created</th><th>Completed</th><th>Status</th>
       </tr>
     </thead>
     <tbody>

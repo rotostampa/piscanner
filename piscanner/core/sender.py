@@ -19,7 +19,7 @@ async def handle_remote_barcodes(barcodes, verbose, sleep_duration=5):
 
     print("handle_remote_barcodes", barcodes)
 
-    return {info.barcode: "OK" for info in barcodes}
+    return {info.barcode: "Ok" for info in barcodes}
 
     if not API_KEY:
         if verbose:

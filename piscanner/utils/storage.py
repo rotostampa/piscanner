@@ -93,7 +93,7 @@ async def init():
                 barcode TEXT NOT NULL,
                 created_timestamp REAL NOT NULL,
                 completed_timestamp REAL,
-                status TEXT NOT NULL DEFAULT 'LOCAL'
+                status TEXT NOT NULL DEFAULT 'Scanned'
             );
 
             CREATE TABLE IF NOT EXISTS settings (
@@ -118,7 +118,7 @@ async def init():
         )
 
 
-async def insert_barcode(barcode: str, status: str = "LOCAL"):
+async def insert_barcode(barcode: str, status: str = "Scanned"):
     async with db_transaction() as db:
         await db.execute(
             "INSERT INTO barcodes (barcode, created_timestamp, status) VALUES (?, ?, ?)",
