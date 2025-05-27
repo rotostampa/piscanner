@@ -8,6 +8,7 @@ GREEN_PIN = 2
 RED_PIN = 3
 YELLOW_PIN = 4
 
+
 def setup_gpio():
 
     if is_mac:
@@ -56,6 +57,6 @@ async def control_light(
         await asyncio.sleep(wait)
 
 
-flash_green = partial(control_light, pin=GREEN_PIN, lock = asyncio.Lock())
-flash_red = partial(control_light, pin=RED_PIN, lock = asyncio.Lock())
-flash_yellow = partial(control_light, pin=YELLOW_PIN, lock = asyncio.Lock())
+flash_green = partial(control_light, pin=GREEN_PIN, lock=asyncio.Lock())
+flash_red = partial(control_light, pin=RED_PIN, lock=asyncio.Lock())
+flash_yellow = partial(control_light, pin=YELLOW_PIN, lock=asyncio.Lock())

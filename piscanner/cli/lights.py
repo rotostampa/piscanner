@@ -1,7 +1,13 @@
 import asyncio
 import click
 
-from piscanner.utils.lights import setup_gpio, cleanup_gpio, flash_green, flash_red, flash_yellow
+from piscanner.utils.lights import (
+    setup_gpio,
+    cleanup_gpio,
+    flash_green,
+    flash_red,
+    flash_yellow,
+)
 
 
 async def test_lights():

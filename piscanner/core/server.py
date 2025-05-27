@@ -73,8 +73,9 @@ async def handle_client(reader, writer, verbose=False):
         )
 
     # Write closing tags
-    await write_chunk("</tbody></table><footer style='color:gray'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>")
-
+    await write_chunk(
+        "</tbody></table><footer style='color:gray'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>"
+    )
 
     # Last chunk
     writer.write(b"0\r\n\r\n")
