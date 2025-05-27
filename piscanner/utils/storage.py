@@ -9,7 +9,7 @@ from piscanner.utils.datastructures import data
 from contextlib import asynccontextmanager
 
 
-DB_FILE = "piscanner-v6.db"
+DB_FILE = "piscanner-v7.db"
 
 if is_mac:
     DB_FILE = os.path.join(os.path.dirname(__file__), DB_FILE)
