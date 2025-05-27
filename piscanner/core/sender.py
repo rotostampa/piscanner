@@ -1,7 +1,7 @@
 import asyncio
 import os
 import aiohttp
-from piscanner.utils.storage import read, mark_as_uploaded
+from piscanner.utils.storage import read
 from piscanner.utils.machine import get_hostname
 import ssl
 
