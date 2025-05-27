@@ -6,6 +6,7 @@ from evdev.ecodes import ecodes
 from piscanner.utils.machine import get_hostname
 from piscanner.utils.storage import insert_barcode
 from asyncio.tasks import ensure_future
+from piscanner.utils.lights import flash_yellow
 
 
 BARCODE_TERMINATOR = ecodes["KEY_DOT"]
@@ -52,6 +53,8 @@ async def print_events(device, verbose=False):
                         if verbose:
                             print("⌨️ ", buffer.strip())
                         ensure_future(insert_barcode(buffer.strip()))
+                        ensure_future(flash_yellow())
+
                     buffer = ""
                 else:
                     # Choose character based on shift state
