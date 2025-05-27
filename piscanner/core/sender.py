@@ -7,6 +7,7 @@ from piscanner.utils.machine import get_hostname
 import ssl
 import re
 from piscanner.utils.datastructures import data
+from piscanner.utils.storage import default_settings
 
 
 async def handle_remote_barcodes(barcodes, verbose, sleep_duration=5):
@@ -90,7 +91,9 @@ async def handle_remote_barcodes(barcodes, verbose, sleep_duration=5):
 
 
 async def handle_settings_barcodes(barcodes, **opts):
-    print("rewrite_settings", barcodes, opts)
+
+    await set_setting({info.name: info.value for info in barcodes})
+
     return {info.barcode: "SettingChanged" for info in barcodes}
 
 
@@ -101,7 +104,9 @@ async def handle_invalid_barcodes(barcodes, **opts):
 
 matchers = (
     (
-        re.compile("(?P<name>TOKEN|STEP|HOST|PATH|TEST|DELTA)X(?P<value>.*)"),
+        re.compile(
+            "(?P<name>{})X(?P<value>.*)".format("|".join(default_settings.keys()))
+        ),
         handle_settings_barcodes,
     ),
     (re.compile("44X(?P<id>.*)"), handle_remote_barcodes),

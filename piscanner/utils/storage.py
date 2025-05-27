@@ -7,9 +7,9 @@ import os
 from itertools import repeat
 from piscanner.utils.datastructures import data
 from contextlib import asynccontextmanager
+from piscanner.utils.settings import default_settings
 
-
-DB_FILE = "piscanner-001.db"
+DB_FILE = "piscanner-002.db"
 
 if is_mac:
     DB_FILE = os.path.join(os.path.dirname(__file__), DB_FILE)
@@ -107,12 +107,7 @@ async def init():
         # Set default settings while we still have the connection and lock
         # Use the existing connection for setting defaults
         await _set_setting_internal(
-            settings_dict={
-                "PISCANNER_SERVER_TOKEN": "",
-                "PISCANNER_SERVER_HOST": "https://rotostampa.com",
-                "PISCANNER_SERVER_PATH": "/api/storage/piscanner-notify-barcode/",
-                "PISCANNER_SERVER_STEP": "0",
-            },
+            settings_dict=default_settings,
             overwrite_settings=False,
             db_connection=db,
         )
