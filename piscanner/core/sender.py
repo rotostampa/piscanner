@@ -22,7 +22,7 @@ async def start_sender(verbose, sleep_duration=5):
         # Collect unsent records
         records = {}
         async for record in read(limit=100, not_uploaded_only=True):
-            records[record["id"]] = record["barcode"]
+            records[record.id] = record.barcode
 
         # If we have records to send
         if records:
