@@ -3,8 +3,6 @@ from functools import partial
 
 from piscanner.utils.machine import is_mac
 
-lights_lock = asyncio.Lock()
-
 # Define pins
 GREEN_PIN = 2
 RED_PIN = 3
@@ -37,13 +35,13 @@ def cleanup_gpio():
 
 # The generic async function
 async def control_light(
-    pin: int, duration: float = 1.0, wait: float = 1.0, verbose=False
+    lock, pin: int, duration: float = 1.0, wait: float = 1.0, verbose=False
 ):
 
     if not is_mac:
         import RPi.GPIO as GPIO
 
-    async with lights_lock:
+    async with lock:
 
         if verbose:
             print(f"💡 Turning ON light on GPIO{pin}")
@@ -58,6 +56,6 @@ async def control_light(
         await asyncio.sleep(wait)
 
 
-flash_green = partial(control_light, pin=GREEN_PIN)
-flash_red = partial(control_light, pin=RED_PIN)
-flash_yellow = partial(control_light, pin=YELLOW_PIN)
+flash_green = partial(control_light, pin=GREEN_PIN, lock = asyncio.Lock())
+flash_red = partial(control_light, pin=RED_PIN, lock = asyncio.Lock())
+flash_yellow = partial(control_light, pin=YELLOW_PIN, lock = asyncio.Lock())
