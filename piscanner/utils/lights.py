@@ -22,7 +22,7 @@ def setup_gpio():
     # Set up pins with initial LOW state to prevent brief HIGH during setup
     #
     for pin in (RED_PIN, GREEN_PIN, YELLOW_PIN):
-        GPIO.setup(pin, GPIO.OUT, initial=GPIO.HIGH)
+        GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
 
 
 def cleanup_gpio():
@@ -48,13 +48,13 @@ async def control_light(
         if verbose:
             print(f"💡 Turning ON light on GPIO{pin}")
         if not is_mac:
-            GPIO.output(pin, GPIO.LOW)
+            GPIO.output(pin, GPIO.HIGH)
         await asyncio.sleep(duration)
 
         if verbose:
             print(f"💡 Turning OFF light on GPIO{pin}")
         if not is_mac:
-            GPIO.output(pin, GPIO.HIGH)
+            GPIO.output(pin, GPIO.LOW)
         await asyncio.sleep(wait)
 
 
