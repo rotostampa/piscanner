@@ -56,11 +56,11 @@ async def db_readonly(path = DB_FILE):
 
 def time_to_date(t):
     if t:
-        return datetime.datetime.fromtimestamp(t / 1000000)
+        return datetime.datetime.fromtimestamp(t)
 
 
 def timestamp(seconds=0):
-    return (time.time() - seconds) * 1000000
+    return (time.time() - seconds)
 
 
 async def init():
