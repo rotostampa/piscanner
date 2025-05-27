@@ -1,5 +1,4 @@
 import aiosqlite
-import time
 import datetime
 from datetime import timezone
 import asyncio
@@ -8,7 +7,6 @@ import os
 from itertools import repeat
 from piscanner.utils.datastructures import data
 from contextlib import asynccontextmanager
-
 
 
 DB_FILE = "piscanner-v6.db"
@@ -20,7 +18,7 @@ else:
 
 
 @asynccontextmanager
-async def db_transaction(path = DB_FILE, lock = asyncio.Lock()):
+async def db_transaction(path=DB_FILE, lock=asyncio.Lock()):
     """
     Async context manager that acquires the database lock, connects to the database,
     and automatically commits the transaction when exiting the context.
@@ -30,7 +28,7 @@ async def db_transaction(path = DB_FILE, lock = asyncio.Lock()):
             await db.execute("INSERT INTO table VALUES (?)", (value,))
     """
     async with lock:
-        async with db_readonly(path = path) as db:
+        async with db_readonly(path=path) as db:
             try:
                 yield db
                 await db.commit()
@@ -40,7 +38,7 @@ async def db_transaction(path = DB_FILE, lock = asyncio.Lock()):
 
 
 @asynccontextmanager
-async def db_readonly(path = DB_FILE):
+async def db_readonly(path=DB_FILE):
     """
     Async context manager that connects to the database in read-only mode
     without acquiring the lock or committing changes.
@@ -67,7 +65,9 @@ def timestamp_to_datetime(t):
     """
     if t:
         # Convert UTC timestamp to datetime with local timezone
-        return  datetime.datetime.fromtimestamp(t, tz=timezone.utc).astimezone()  # Convert to local timezone
+        return datetime.datetime.fromtimestamp(
+            t, tz=timezone.utc
+        ).astimezone()  # Convert to local timezone
 
 
 def timestamp(seconds=0):
@@ -92,7 +92,8 @@ async def init():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 barcode TEXT NOT NULL,
                 created_timestamp REAL NOT NULL,
-                uploaded_timestamp REAL
+                uploaded_timestamp REAL,
+                status TEXT NOT NULL DEFAULT 'LOCAL'
             );
 
             CREATE TABLE IF NOT EXISTS settings (
@@ -113,15 +114,15 @@ async def init():
                 "PISCANNER_SERVER_STEP": "0",
             },
             overwrite_settings=False,
-            db_connection=db
+            db_connection=db,
         )
 
 
-async def insert_barcode(barcode: str):
+async def insert_barcode(barcode: str, status: str = "LOCAL"):
     async with db_transaction() as db:
         await db.execute(
-            "INSERT INTO barcodes (barcode, created_timestamp) VALUES (?, ?)",
-            (barcode, timestamp()),
+            "INSERT INTO barcodes (barcode, created_timestamp, status) VALUES (?, ?, ?)",
+            (barcode, timestamp(), status),
         )
 
 
@@ -137,7 +138,7 @@ async def read(limit=50, not_uploaded_only=False):
         Generator yielding record dictionaries
     """
     async with db_readonly() as db:
-        query = "SELECT id, barcode, created_timestamp, uploaded_timestamp FROM barcodes"
+        query = "SELECT id, barcode, created_timestamp, uploaded_timestamp, status FROM barcodes"
 
         if not_uploaded_only:
             query += " WHERE uploaded_timestamp IS NULL"
@@ -149,12 +150,13 @@ async def read(limit=50, not_uploaded_only=False):
             (limit,),
         )
 
-        async for id, barcode, created_timestamp, uploaded_timestamp in cursor:
+        async for id, barcode, created_timestamp, uploaded_timestamp, status in cursor:
             yield data(
-                id= id,
-                barcode= barcode,
-                created_timestamp= timestamp_to_datetime(created_timestamp),
-                uploaded_timestamp= timestamp_to_datetime(uploaded_timestamp),
+                id=id,
+                barcode=barcode,
+                created_timestamp=timestamp_to_datetime(created_timestamp),
+                uploaded_timestamp=timestamp_to_datetime(uploaded_timestamp),
+                status=status,
             )
 
 
@@ -182,6 +184,7 @@ async def unsent_events_count(seconds=5):
         count = await cursor.fetchone()
         return count[0]
 
+
 async def cleanup_db(seconds=86400):
     """
     Delete records older than the specified number of seconds.
@@ -204,7 +207,7 @@ async def cleanup_db(seconds=86400):
 
 async def mark_as_uploaded(record_ids):
     """
-    Mark the specified records as uploaded by setting their uploaded_timestamp.
+    Mark the specified records as uploaded by setting their uploaded_timestamp and status.
 
     Args:
         record_ids: List of record IDs to mark as uploaded
@@ -220,7 +223,7 @@ async def mark_as_uploaded(record_ids):
 
     async with db_transaction() as db:
         cursor = await db.execute(
-            f"UPDATE barcodes SET uploaded_timestamp = ? WHERE id IN ({placeholders})",
+            f"UPDATE barcodes SET uploaded_timestamp = ?, status = 'UPLOADED' WHERE id IN ({placeholders})",
             (timestamp(), *record_ids),
         )
         return cursor.rowcount
@@ -243,7 +246,7 @@ async def get_settings():
         return settings
 
 
-async def _set_setting_internal(settings_dict, db_connection, overwrite_settings = True):
+async def _set_setting_internal(settings_dict, db_connection, overwrite_settings=True):
     """
     Internal helper function to set settings using an existing connection.
 
@@ -307,7 +310,5 @@ async def set_setting(**settings_dict):
 
     async with db_transaction() as db:
         return await _set_setting_internal(
-            settings_dict=settings_dict,
-            overwrite_settings=True,
-            db_connection=db
+            settings_dict=settings_dict, overwrite_settings=True, db_connection=db
         )

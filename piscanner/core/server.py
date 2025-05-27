@@ -49,7 +49,7 @@ async def handle_client(reader, writer, verbose=False):
     <caption style="font-weight: bold; font-size: 1.2em; margin-bottom: 10px; text-align: left;">Barcodes</caption>
     <thead>
       <tr>
-        <th>ID</th><th>Barcode</th><th>Create Timestamp</th><th>Uploaded Timestamp</th>
+        <th>ID</th><th>Barcode</th><th>Create Timestamp</th><th>Uploaded Timestamp</th><th>Status</th>
       </tr>
     </thead>
     <tbody>
@@ -57,7 +57,7 @@ async def handle_client(reader, writer, verbose=False):
             **context
         )
     )
-    
+
     # Stream barcode rows one by one
     async for row in read():
         await write_chunk(
@@ -67,6 +67,7 @@ async def handle_client(reader, writer, verbose=False):
             <td>{barcode}</td>
             <td>{created_timestamp}</td>
             <td>{uploaded_timestamp}</td>
+            <td>{status}</td>
             </tr>
         """.format(
                 **row
@@ -75,13 +76,15 @@ async def handle_client(reader, writer, verbose=False):
 
     # Close barcodes table
     await write_chunk("</tbody></table>")
-    
+
     # Add spacing between tables
-    await write_chunk("<div style=\"margin: 20px 0;\"></div>")
-    
+    await write_chunk('<div style="margin: 20px 0;"></div>')
+
     # Add settings table
-    await write_chunk("<table><caption style=\"font-weight: bold; font-size: 1.2em; margin-bottom: 10px; text-align: left;\">Settings</caption><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody>")
-    
+    await write_chunk(
+        '<table><caption style="font-weight: bold; font-size: 1.2em; margin-bottom: 10px; text-align: left;">Settings</caption><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody>'
+    )
+
     # Get and display settings
     settings = await get_settings()
     for key, value in settings.items():
@@ -95,7 +98,7 @@ async def handle_client(reader, writer, verbose=False):
                 key=key, value=value
             )
         )
-    
+
     # Write closing tags
     await write_chunk(
         "</tbody></table><footer style='color:gray'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>"
