@@ -12,17 +12,23 @@ def barcode(prefix="44"):
     )
 
 
-async def populate_initial_data():
+async def populate_initial_data(barcodes):
     await init()
 
-    for i in range(10):
-        await insert_barcode(barcode())
+    if barcodes:
+        # Insert provided barcodes verbatim
+        for code in barcodes:
+            await insert_barcode(code)
+    else:
+        # Generate random barcodes as before
+        for i in range(10):
+            await insert_barcode(barcode())
 
-    for i in range(3):
-        await insert_barcode(barcode(prefix="4{}".format(i)))
+        for i in range(3):
+            await insert_barcode(barcode(prefix="4{}".format(i)))
 
-    await insert_barcode(barcode(prefix="TEST1"))
-    await insert_barcode(barcode(prefix="TEST2"))
+        await insert_barcode(barcode(prefix="TEST1"))
+        await insert_barcode(barcode(prefix="TEST2"))
 
 
 async def cleanup_database(seconds):
@@ -31,8 +37,10 @@ async def cleanup_database(seconds):
 
 
 @click.command(help="Populate with initial data")
-def populate():
-    asyncio.run(populate_initial_data())
+@click.argument("barcodes", nargs=-1)
+def populate(barcodes):
+    # Combine option barcodes and argument barcodes
+    asyncio.run(populate_initial_data(barcodes))
 
 
 @click.command(help="Cleanup old records from the database")

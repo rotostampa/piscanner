@@ -15,8 +15,6 @@ async def handle_remote_barcodes(barcodes, verbose):
 
     hostname = get_hostname()
 
-    print("handle_remote_barcodes", barcodes)
-
     # return {info.barcode: "Ok" for info in barcodes}
 
     url = "{HOST}{PATH}".format(**settings)
