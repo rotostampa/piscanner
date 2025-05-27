@@ -19,6 +19,9 @@ async def populate_initial_data():
     for i in range(3):
         await insert_barcode(barcode(prefix = '4{}'.format(i)))
 
+    await insert_barcode(barcode(prefix = 'TEST'))
+    await insert_barcode(barcode(prefix = 'DELTA'))
+
 async def cleanup_database(seconds):
     await init()
     return await cleanup_db(seconds)

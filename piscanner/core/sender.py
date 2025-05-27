@@ -2,7 +2,7 @@ import asyncio
 import os
 import aiohttp
 from collections import defaultdict
-from piscanner.utils.storage import read, set_status_mapping
+from piscanner.utils.storage import read, set_status_mapping, set_setting
 from piscanner.utils.machine import get_hostname
 import ssl
 import re
@@ -101,7 +101,7 @@ async def handle_invalid_barcodes(barcodes, **opts):
 
 matchers = (
     (
-        re.compile("(?P<name>TOKEN|STEP|HOST|PATH)X(?P<value>.*)"),
+        re.compile("(?P<name>TOKEN|STEP|HOST|PATH|TEST|DELTA)X(?P<value>.*)"),
         handle_settings_barcodes,
     ),
     (re.compile("44X(?P<id>.*)"), handle_remote_barcodes),
