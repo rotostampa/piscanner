@@ -187,12 +187,7 @@ async def mark_as_uploaded(record_ids):
             return updated_count
 
 
-
-
-
-
-
-async def get_all_settings():
+async def get_settings():
     """
     Get all settings.
 
@@ -200,9 +195,7 @@ async def get_all_settings():
         dict: Dictionary of all settings (key-value pairs)
     """
     async with aiosqlite.connect(DB_FILE) as db:
-        cursor = await db.execute(
-            "SELECT key, value FROM settings ORDER BY key"
-        )
+        cursor = await db.execute("SELECT key, value FROM settings ORDER BY key")
 
         settings = {}
         async for key, value in cursor:
@@ -211,30 +204,38 @@ async def get_all_settings():
         return settings
 
 
-async def set_setting(key, value):
+async def set_settings(**kwargs):
     """
-    Set a setting value by key. If the key already exists, it will be updated.
+    Set multiple settings at once. If a key already exists, it will be updated.
 
     Args:
-        key: The setting key to set
-        value: The setting value to store
+        **kwargs: Key-value pairs to set in the database
 
     Returns:
-        bool: True if successful
+        int: Number of records updated/inserted
     """
+    if not kwargs:
+        return 0
+
     current_time = timestamp()
 
+    # Create placeholders and params directly with list comprehension
+    placeholders = ",".join(repeat("(?, ?, ?)", len(kwargs)))
     async with db_lock:
         async with aiosqlite.connect(DB_FILE) as db:
-            await db.execute(
-                """
+            cursor = await db.execute(
+                f"""
                 INSERT INTO settings (key, value, create_timestamp)
-                VALUES (?, ?, ?)
+                VALUES {placeholders}
                 ON CONFLICT(key) DO UPDATE SET
                     value = excluded.value,
                     create_timestamp = excluded.create_timestamp
                 """,
-                (key, value, current_time),
+                tuple(
+                    param
+                    for key, value in kwargs.items()
+                    for param in (key, value, current_time)
+                ),
             )
             await db.commit()
-            return True
+            return cursor.rowcount
