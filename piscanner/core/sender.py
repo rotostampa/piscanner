@@ -92,8 +92,7 @@ matchers = (
 )
 
 
-async def start_sender(sleep_duration=5, **opts):
-    print("not implementer")
+async def start_sender(sleep_duration=5, verbose=False, **opts):
 
     while True:
         # Collect unsent records
@@ -112,13 +111,17 @@ async def start_sender(sleep_duration=5, **opts):
 
                 for compiled, func in matchers:
                     if match := compiled.match(r):
+                        if verbose:
+                            print(f"🧑🏼‍🔬 Matched barcode {r} with function {func.__name__}")
                         groups[func].append(data(barcode=r, **match.groupdict()))
 
                 if not match:
+                    if verbose:
+                        print(f"🧑🏼‍🔬 Invalid barcode {r}")
                     groups[handle_invalid_barcodes].append(data(barcode=r))
 
             for func, items in groups.items():
-                results = await func(items, **opts)
+                results = await func(items, verbose=verbose, **opts)
 
                 for barcode, status in results.items():
                     barcodes[barcode] = status
