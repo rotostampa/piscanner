@@ -9,7 +9,7 @@ from asyncio.tasks import ensure_future
 from piscanner.utils.lights import flash_yellow
 
 
-BARCODE_TERMINATOR = ecodes["KEY_DOT"]
+BARCODE_TERMINATOR = ecodes["KEY_ENTER"]
 
 EV_KEY = ecodes["EV_KEY"]
 KEY_LEFTSHIFT = ecodes["KEY_LEFTSHIFT"]
@@ -34,6 +34,7 @@ async def print_events(device, verbose=False):
     # print("-" * 20)
 
     async for event in device.async_read_loop():
+
         if event.type == EV_KEY:
             key_event = evdev.categorize(event)
             code = key_event.scancode
