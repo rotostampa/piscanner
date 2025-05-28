@@ -7,7 +7,6 @@ import os
 from itertools import repeat
 from piscanner.utils.datastructures import data
 from contextlib import asynccontextmanager
-from piscanner.utils.settings import default_settings
 
 DB_FILE = "piscanner-002.db"
 
@@ -249,7 +248,11 @@ async def get_settings():
         dict: Dictionary of all settings (key-value pairs)
     """
 
-    settings = data(**default_settings)
+    settings = data(
+        TOKEN="",
+        URL="",
+        STEP="",
+    )
 
     async with db_readonly() as db:
         cursor = await db.execute("SELECT key, value FROM settings ORDER BY key")
