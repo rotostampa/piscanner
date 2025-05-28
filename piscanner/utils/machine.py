@@ -20,7 +20,7 @@ def is_ipv4(s):
 def get_local_hostname():
     hostname = get_hostname()
 
-    if is_ipv4(hostname):
+    if hostname.endswith(".local") or is_ipv4(hostname):
         return hostname
     else:
         return "{}.local".format(hostname)
