@@ -1,6 +1,5 @@
 import aiosqlite
 import datetime
-from datetime import timezone
 import asyncio
 from piscanner.utils.machine import is_mac
 import os
@@ -65,7 +64,7 @@ def timestamp_to_datetime(t):
     if t:
         # Convert UTC timestamp to datetime with local timezone
         return datetime.datetime.fromtimestamp(
-            t, tz=timezone.utc
+            t, tz=datetime.UTC
         ).astimezone()  # Convert to local timezone
 
 
@@ -80,7 +79,7 @@ def timestamp(seconds=0):
         float: UTC timestamp
     """
     # Get current UTC timestamp
-    return datetime.datetime.now(timezone.utc).timestamp() - seconds
+    return datetime.datetime.now(datetime.UTC).timestamp() - seconds
 
 
 async def init():
@@ -146,31 +145,6 @@ async def read(limit=50, not_uploaded_only=False):
             )
 
 
-async def unsent_events_count(seconds=5):
-    """
-    Check if there are any records without an completed_timestamp.
-
-    Args:
-        seconds: Number of seconds from now to filter out recently created records (default: 5)
-
-    Returns:
-        int: Number of unsent records
-    """
-    cutoff_time = timestamp(seconds)  # Negative seconds to exclude recent records
-
-    async with db_readonly() as db:
-        cursor = await db.execute(
-            """
-            SELECT COUNT(*) FROM barcodes
-            WHERE completed_timestamp IS NULL
-            AND created_timestamp <= ?
-            """,
-            (cutoff_time,),
-        )
-        count = await cursor.fetchone()
-        return count[0]
-
-
 async def cleanup_db(seconds=86400):
     """
     Delete records older than the specified number of seconds.
@@ -234,6 +208,28 @@ async def set_status_mapping(status_to_ids_mapping):
         await db.executescript(sql_script)
 
     return total_records
+
+
+async def get_latest_timestamp():
+    """
+    Get the most recent barcode based on completed_timestamp.
+
+    Returns:
+        datetime: Datetime of the most recent completed barcode or None if no completed barcodes exist
+    """
+    async with db_readonly() as db:
+        cursor = await db.execute(
+            """
+            SELECT MAX(completed_timestamp) as latest_timestamp
+            FROM barcodes
+            WHERE completed_timestamp IS NOT NULL
+            """
+        )
+
+        row = await cursor.fetchone()
+        if row:
+            return timestamp_to_datetime(row[0])
+        return None
 
 
 async def get_settings():
