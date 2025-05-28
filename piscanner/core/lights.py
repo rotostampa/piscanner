@@ -1,22 +1,30 @@
 import asyncio
+import datetime
 
-from piscanner.utils.storage import unsent_events_count
-from piscanner.utils.lights import flash_green, flash_red
+from piscanner.utils.storage import get_latest_timestamp
+from piscanner.utils.lights import flash_green, flash_red, flash_yellow
 
 
-async def start_lights(verbose=False):
+async def start_lights(check_seconds=5, wait_timout=5, verbose=False):
     while True:
-        await asyncio.sleep(1)
+        # Get the latest timestamp
+        latest_timestamp = await get_latest_timestamp()
 
-        count = await unsent_events_count()
-
-        if verbose:
-            print("💡 Uncounted events:", count)
-
-        if count == 0:
-            await flash_green(verbose=verbose)
+        if not latest_timestamp or latest_timestamp <= (
+            datetime.datetime.now(datetime.UTC)
+            - datetime.timedelta(seconds=check_seconds)
+        ):
+            if verbose:
+                print("💡 flashing status lights")
+            await flash_red()
+            await flash_yellow()
+            await flash_green()
         else:
-            await flash_red(verbose=verbose)
+            if verbose:
+                print("💡 not flashing")
+
+        # Wait before checking again
+        await asyncio.sleep(wait_timout)
 
 
 def lights_coroutines(*args, **opts):
