@@ -15,8 +15,6 @@ async def handle_remote_barcodes(barcodes, verbose):
 
     hostname = get_hostname()
 
-    # return {info.barcode: "Ok" for info in barcodes}
-
     url = "{URL}".format(**settings)
 
     # Build form data
@@ -32,8 +30,10 @@ async def handle_remote_barcodes(barcodes, verbose):
             print(f"📤 Sent barcode: {info.barcode}")
 
     ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE  # Disable cert verification
+
+    if settings.INSECURE:
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE  # Disable cert verification
 
     # Send the request asynchronously
     async with aiohttp.ClientSession() as session:
@@ -92,7 +92,7 @@ async def handle_settings_barcodes(barcodes, verbose=False, **opts):
 
         else:
 
-            result[info.barcode] = "SettingChanged"
+            result[info.barcode] = "SettingsChanged"
 
             for k, values in parse_qs(parsed.query).items():
                 for v in values:

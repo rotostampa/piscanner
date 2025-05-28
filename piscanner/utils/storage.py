@@ -250,6 +250,7 @@ async def get_settings():
         STEP="",
         BARCODE_VAR="barcode",
         HOSTNAME_VAR="hostname",
+        INSECURE=""
     )
 
     async with db_readonly() as db:
