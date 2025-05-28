@@ -7,7 +7,8 @@ import ssl
 import re
 from piscanner.utils.datastructures import data
 from urllib.parse import urlparse, parse_qs
-
+from asyncio.tasks import ensure_future
+from piscanner.utils.lights import flash_green, flash_red
 
 async def handle_remote_barcodes(barcodes, verbose):
     # API endpoint details
@@ -53,7 +54,11 @@ async def handle_remote_barcodes(barcodes, verbose):
                 if response.status == 200:
                     print(f"✅ Successfully sent {len(barcodes)} barcodes")
 
+                    ensure_future(flash_green())
+
                     return {info.barcode: "Accepted" for info in barcodes}
+
+                ensure_future(flash_red())
 
                 if verbose:
                     print(
