@@ -69,13 +69,17 @@ async def handle_remote_barcodes(barcodes, verbose):
 
                         return {info.barcode: "InvalidJson" for info in barcodes}
 
-                    if verbose:
-                        print('🌎 server response', content)
-
                     status = content.get("status") or "Accepted"
                     mapping = content.get("barcode_statuses") or {}
 
+                    if verbose:
+                        print('🌎 server response', content)
+
+                        for info in barcodes:
+                            print('🌎 barcode response', info.barcode, mapping.get(info.barcode))
+
                     ensure_future(flash_green())
+
 
                     return {
                         info.barcode: mapping.get(info.barcode) or status
