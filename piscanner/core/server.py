@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from piscanner.utils.storage import read, get_settings
-from piscanner.utils.machine import get_hostname
+from piscanner.utils.machine import get_hostname, get_local_hostname
 from functools import partial
 
 
@@ -123,7 +123,7 @@ async def start_server(address="0.0.0.0", port=9999, verbose=False):
     server = await asyncio.start_server(
         partial(handle_client, verbose=verbose), address, port
     )
-    print("🤖 Serving on http://{}:{}...".format(get_hostname(), port))
+    print("🤖 Serving on http://{}:{}...".format(get_local_hostname(), port))
     async with server:
         await server.serve_forever()
 
