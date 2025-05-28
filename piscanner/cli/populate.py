@@ -12,23 +12,28 @@ def barcode(prefix):
     )
 
 
+async def log_insert(value):
+    print(value)
+    return await insert_barcode(value)
+
+
 async def populate_initial_data(barcodes):
     await init()
 
     if barcodes:
         # Insert provided barcodes verbatim
         for code in barcodes:
-            await insert_barcode(code)
+            await log_insert(code)
     else:
         # Generate random barcodes as before
         for i in range(10):
-            await insert_barcode(barcode("44"))
+            await log_insert(barcode("44"))
 
         for i in range(3):
-            await insert_barcode(barcode(prefix="4{}".format(i)))
+            await log_insert(barcode(prefix="4{}".format(i)))
 
-        await insert_barcode(barcode(prefix="TEST1"))
-        await insert_barcode(barcode(prefix="TEST2"))
+        await log_insert(barcode(prefix="INVALID"))
+        await log_insert(barcode(prefix="INVALID"))
 
 
 async def cleanup_database(seconds):
