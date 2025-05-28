@@ -115,7 +115,7 @@ async def handle_settings_barcodes(barcodes, verbose=False, **opts):
 
     if settings:
 
-        ensure_future(flash_yellow())
+        ensure_future(flash_green(duration = 1))
 
         await set_setting(settings)
 
