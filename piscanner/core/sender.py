@@ -31,7 +31,7 @@ async def handle_remote_barcodes(barcodes, verbose):
 
     ssl_context = ssl.create_default_context()
 
-    if settings.INSECURE:
+    if bool(settings.INSECURE):
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE  # Disable cert verification
 
