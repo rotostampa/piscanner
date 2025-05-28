@@ -41,9 +41,13 @@ async def handle_remote_barcodes(barcodes, verbose):
             async with session.post(
                 url,
                 data=form_data,
-                headers={
-                    "Authorization": "Bearer {TOKEN}".format(**settings),
-                },
+                headers=(
+                    {
+                        "Authorization": "Bearer {TOKEN}".format(TOKEN=settings.TOKEN),
+                    }
+                    if settings.TOKEN
+                    else None
+                ),
                 ssl=ssl_context,
             ) as response:
                 if response.status == 200:
