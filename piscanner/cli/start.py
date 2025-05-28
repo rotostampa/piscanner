@@ -10,13 +10,13 @@ from piscanner.utils.machine import is_mac
 from piscanner.utils.lights import setup_gpio, cleanup_gpio
 
 
-def yield_coroutines():
+def yield_coroutines(server, listener, sender, lights, cleanup):
     for module, cmd, check in (
-        ("piscanner.core.listener", "listener_coroutines", not is_mac),
-        ("piscanner.core.server", "server_coroutines", True),
-        ("piscanner.core.sender", "sender_coroutines", True),
-        ("piscanner.core.lights", "lights_coroutines", True),
-        ("piscanner.core.cleanup", "cleanup_coroutines", True),
+        ("piscanner.core.listener", "listener_coroutines", listener and not is_mac),
+        ("piscanner.core.server", "server_coroutines", server),
+        ("piscanner.core.sender", "sender_coroutines", sender),
+        ("piscanner.core.lights", "lights_coroutines", lights),
+        ("piscanner.core.cleanup", "cleanup_coroutines", cleanup),
     ):
         if check:
             func = getattr(import_module(module), cmd)
@@ -42,7 +42,7 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 
-async def main(**kwargs):
+async def main(server, listener, sender, lights, cleanup, **kwargs):
 
     setup_gpio()
 
@@ -52,7 +52,9 @@ async def main(**kwargs):
 
     await init()
 
-    for coroutine, args, opts in yield_coroutines():
+    for coroutine, args, opts in yield_coroutines(
+        server, listener, sender, lights, cleanup
+    ):
         asyncio.create_task(restart_on_failure(coroutine, *args, **opts, **kwargs))
 
     try:
@@ -64,6 +66,11 @@ async def main(**kwargs):
 
 
 @click.command(help="Listen for barcode scanner")
+@click.option("--listener/--no-listener", default=True, help="Enable/disable listener")
+@click.option("--server/--no-server", default=True, help="Enable/disable server")
+@click.option("--sender/--no-sender", default=True, help="Enable/disable sender")
+@click.option("--lights/--no-lights", default=True, help="Enable/disable lights")
+@click.option("--cleanup/--no-cleanup", default=True, help="Enable/disable cleanup")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def start(verbose):
-    asyncio.run(main(verbose=verbose))
+def start(**opts):
+    asyncio.run(main(**opts))
