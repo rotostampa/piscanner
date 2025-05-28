@@ -20,9 +20,9 @@ async def handle_remote_barcodes(barcodes, verbose):
     url = "{URL}".format(**settings)
 
     # Build form data
-    form_data = [("hostname", hostname)]
+    form_data = [(settings.HOSTNAME_VAR, hostname)]
     for info in barcodes:
-        form_data.append(("barcode", info.barcode))
+        form_data.append((settings.BARCODE_VAR, info.barcode))
 
     print(f"📤 Sending {len(barcodes)} barcodes to {url}...")
 
@@ -106,7 +106,7 @@ async def handle_settings_barcodes(barcodes, verbose=False, **opts):
 
 async def handle_invalid_barcodes(barcodes, **opts):
     print("invalid_barcodes", barcodes, opts)
-    return {info.barcode: "NotOrder" for info in barcodes}
+    return {info.barcode: "InvalidBarcode" for info in barcodes}
 
 
 matchers = (

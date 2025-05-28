@@ -217,16 +217,12 @@ async def set_status_mapping(status_to_ids_mapping):
 
         # Create comma-separated list of record IDs for this status
         id_list = ",".join(str(id) for id in record_ids)
-        if id_list:
-            # Use proper SQL escaping for the status string
-            # SQLite uses single quotes for string literals
-            escaped_status = status.replace("'", "''")
 
-            script_parts.append(
-                f"UPDATE barcodes SET completed_timestamp = {current_time}, "
-                f"status = '{escaped_status}' WHERE id IN ({id_list});"
-            )
-            total_records += len(record_ids)
+        script_parts.append(
+            f"UPDATE barcodes SET completed_timestamp = {current_time}, "
+            f"status = '{status}' WHERE id IN ({id_list});"
+        )
+        total_records += len(record_ids)
 
     if not script_parts:
         return 0
@@ -252,6 +248,8 @@ async def get_settings():
         TOKEN="",
         URL="",
         STEP="",
+        BARCODE_VAR="barcode",
+        HOSTNAME_VAR="hostname",
     )
 
     async with db_readonly() as db:

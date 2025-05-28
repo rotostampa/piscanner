@@ -49,7 +49,7 @@ async def handle_client(reader, writer, verbose=False):
     <caption style="font-weight: bold; font-size: 1.2em; margin-bottom: 10px; text-align: left;">Barcodes</caption>
     <thead>
       <tr>
-        <th>ID</th><th>Barcode</th><th>Created</th><th>Completed</th><th>Status</th>
+        <th>ID</th><th>Barcode</th><th>Status</th><th>Created</th><th>Completed</th>
       </tr>
     </thead>
     <tbody>
@@ -60,14 +60,16 @@ async def handle_client(reader, writer, verbose=False):
 
     # Stream barcode rows one by one
     async for row in read():
+        # Truncate barcode if longer than 20 characters
+        row.truncated_barcode = row.barcode[:25] + '...' if len(row.barcode) > 25 else row.barcode
         await write_chunk(
             """
             <tr>
             <td>{id}</td>
-            <td>{barcode}</td>
-            <td>{created_timestamp}</td>
-            <td>{completed_timestamp}</td>
+            <td title="{barcode}">{truncated_barcode}</td>
             <td>{status}</td>
+            <td><small>{created_timestamp}</small></td>
+            <td><small>{completed_timestamp}</small></td>
             </tr>
         """.format(
                 **row
