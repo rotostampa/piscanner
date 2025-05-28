@@ -17,8 +17,8 @@ async def test_lights(**opts):
 
 
 @click.command(help="Test wait")
-@click.option("--duration", default="0.2", type=int, help="Time to wait for")
-@click.option("--wait", default="0.2", type=int, help="Time to wait for")
+@click.option("--duration", default="0.2", type=float, help="Time to wait for")
+@click.option("--wait", default="0.2", type=float, help="Time to wait for")
 def lights(duration, wait):
 
     setup_gpio()
