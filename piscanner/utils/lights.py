@@ -4,8 +4,8 @@ from functools import partial
 from piscanner.utils.machine import is_mac
 
 # Define pins
-GREEN_PIN = 4
-RED_PIN = 3
+GREEN_PIN = 3
+RED_PIN = 4
 YELLOW_PIN = 2
 
 
