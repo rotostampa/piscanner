@@ -20,7 +20,10 @@ async def handle_remote_barcodes(barcodes, verbose):
     url = "{URL}".format(URL=settings.URL)
 
     # Build form data
-    form_data = [(settings.HOSTNAME_VAR or "hostname", hostname)]
+    form_data = [
+        (settings.HOSTNAME_VAR or "hostname", hostname),
+        (settings.STEP_VAR or "step", settings.STEP)
+    ]
     for info in barcodes:
         form_data.append((settings.BARCODE_VAR or "barcode", info.barcode))
 
