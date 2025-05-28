@@ -17,9 +17,10 @@ async def start_lights(check_seconds=5, wait_timout=5, verbose=False):
             if verbose:
                 print("💡 flashing status lights")
 
+            await flash_green(wait = 0)
             await flash_red(wait = 0)
             await flash_yellow(wait = 0)
-            await flash_green(wait = 0)
+
         else:
             if verbose:
                 print("💡 not flashing ")
