@@ -32,8 +32,8 @@ async def populate_initial_data(barcodes):
         for i in range(3):
             await log_insert(barcode(prefix="4{}".format(i)))
 
-        await log_insert(barcode(prefix="INVALID"))
-        await log_insert(barcode(prefix="INVALID"))
+        await log_insert(barcode(prefix="invalid"))
+        await log_insert(barcode(prefix="invalid"))
 
 
 async def cleanup_database(seconds):
