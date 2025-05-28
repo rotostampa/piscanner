@@ -110,10 +110,11 @@ async def handle_settings_barcodes(barcodes, verbose=False, **opts):
                 for v in values:
                     settings[k] = v
 
-    if verbose:
-        print(f"🧑‍🔬 Settings: {settings}")
+
 
     if settings:
+
+        print(f"🧑‍🔬 Settings changed: {settings}")
 
         ensure_future(flash_green(duration = 1))
 
