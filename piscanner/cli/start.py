@@ -22,7 +22,7 @@ def yield_coroutines(server, listener, sender, lights, cleanup):
             func = getattr(import_module(module), cmd)
             yield from func()
         else:
-            warnings.warn("Warning {}.{} won't run on your system".format(module, cmd))
+            print("⚠️ Warning {}.{} won't run on your system".format(module, cmd), file=sys.stderr)
 
 
 async def restart_on_failure(coroutine_func, *args, **kwargs):
