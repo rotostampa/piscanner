@@ -61,7 +61,9 @@ async def handle_client(reader, writer, verbose=False):
     # Stream barcode rows one by one
     async for row in read():
         # Truncate barcode if longer than 20 characters
-        row.truncated_barcode = row.barcode[:25] + '...' if len(row.barcode) > 25 else row.barcode
+        row.truncated_barcode = (
+            row.barcode[:25] + "..." if len(row.barcode) > 25 else row.barcode
+        )
         await write_chunk(
             """
             <tr>
