@@ -15,7 +15,7 @@ async def handle_remote_barcodes(barcodes, verbose):
 
     hostname = get_hostname()
 
-    url = "{URL}".format(**settings)
+    url = "{URL}".format(URL=settings.URL)
 
     # Build form data
     form_data = [(settings.HOSTNAME_VAR or "hostname", hostname)]
