@@ -8,7 +8,7 @@ import re
 from piscanner.utils.datastructures import data
 from urllib.parse import urlparse, parse_qs
 from asyncio.tasks import ensure_future
-from piscanner.utils.lights import flash_green, flash_red
+from piscanner.utils.lights import flash_green, flash_red, flash_yellow
 
 
 async def handle_remote_barcodes(barcodes, verbose):
@@ -100,6 +100,8 @@ async def handle_settings_barcodes(barcodes, verbose=False, **opts):
         ):
             result[info.barcode] = "InvalidBarcode"
 
+            ensure_future(flash_red())
+
         else:
 
             result[info.barcode] = "SettingsChanged"
@@ -112,6 +114,9 @@ async def handle_settings_barcodes(barcodes, verbose=False, **opts):
         print(f"🧑‍🔬 Settings: {settings}")
 
     if settings:
+
+        ensure_future(flash_yellow())
+
         await set_setting(settings)
 
     return result
@@ -119,6 +124,9 @@ async def handle_settings_barcodes(barcodes, verbose=False, **opts):
 
 async def handle_invalid_barcodes(barcodes, **opts):
     print("invalid_barcodes", barcodes, opts)
+
+    ensure_future(flash_red())
+
     return {info.barcode: "InvalidBarcode" for info in barcodes}
 
 
