@@ -15,10 +15,13 @@ async def start_lights(check_seconds=5, wait_timout=5, verbose=False):
             - datetime.timedelta(seconds=check_seconds)
         ):
             if verbose:
-                print("💡 flashing status lights")
-            await flash_red()
-            await flash_yellow()
-            await flash_green()
+                print("💡 flashing status lights in parallel")
+
+            await asyncio.gather(
+                flash_red(verbose=verbose),
+                flash_yellow(verbose=verbose),
+                flash_green(verbose=verbose)
+            )
         else:
             if verbose:
                 print("💡 not flashing")
