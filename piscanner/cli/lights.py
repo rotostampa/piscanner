@@ -22,5 +22,5 @@ async def test_lights(**opts):
 def lights(duration, wait):
 
     setup_gpio()
-    asyncio.run(test_lights(duration = duration, wait = wait))
+    asyncio.run(test_lights(duration=duration, wait=wait))
     cleanup_gpio()

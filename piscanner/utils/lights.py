@@ -36,7 +36,12 @@ def cleanup_gpio():
 
 # The generic async function
 async def control_light(
-    lock, pin: int, duration: float = 0.3, wait: float = 0.2, title='Unknown', verbose=False
+    lock,
+    pin: int,
+    duration: float = 0.3,
+    wait: float = 0.2,
+    title="Unknown",
+    verbose=False,
 ):
 
     if not is_mac:
@@ -57,6 +62,8 @@ async def control_light(
         await asyncio.sleep(wait)
 
 
-flash_green = partial(control_light, pin=GREEN_PIN, lock=asyncio.Lock(), title='Green')
-flash_red = partial(control_light, pin=RED_PIN, lock=asyncio.Lock(), title='Red')
-flash_yellow = partial(control_light, pin=YELLOW_PIN, lock=asyncio.Lock(), title='Yellow')
+flash_green = partial(control_light, pin=GREEN_PIN, lock=asyncio.Lock(), title="Green")
+flash_red = partial(control_light, pin=RED_PIN, lock=asyncio.Lock(), title="Red")
+flash_yellow = partial(
+    control_light, pin=YELLOW_PIN, lock=asyncio.Lock(), title="Yellow"
+)

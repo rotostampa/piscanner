@@ -10,6 +10,7 @@ from urllib.parse import urlparse, parse_qs
 from asyncio.tasks import ensure_future
 from piscanner.utils.lights import flash_green, flash_red
 
+
 async def handle_remote_barcodes(barcodes, verbose):
     # API endpoint details
     settings = await get_settings()

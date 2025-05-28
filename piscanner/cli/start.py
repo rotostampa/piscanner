@@ -5,7 +5,6 @@ import click
 import signal
 import sys
 from piscanner.utils.storage import init
-import warnings
 from piscanner.utils.machine import is_mac
 from piscanner.utils.lights import setup_gpio, cleanup_gpio
 
@@ -22,7 +21,10 @@ def yield_coroutines(server, listener, sender, lights, cleanup):
             func = getattr(import_module(module), cmd)
             yield from func()
         else:
-            print("⚠️ Warning {}.{} won't run on your system".format(module, cmd), file=sys.stderr)
+            print(
+                "⚠️ Warning {}.{} won't run on your system".format(module, cmd),
+                file=sys.stderr,
+            )
 
 
 async def restart_on_failure(coroutine_func, *args, **kwargs):
