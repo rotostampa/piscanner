@@ -10,17 +10,17 @@ from piscanner.utils.lights import (
 )
 
 
-async def test_lights():
+async def test_lights(**opts):
     while True:
         for func in (flash_red, flash_green, flash_yellow):
-            await func(duration=0.2, wait=0.1, verbose=True)
+            await func(**opts, verbose=True)
 
 
 @click.command(help="Test wait")
-@click.option("--duration", default="1", type=int, help="Time to wait for")
-@click.option("--wait", default="1", type=int, help="Time to wait for")
+@click.option("--duration", default="0.2", type=int, help="Time to wait for")
+@click.option("--wait", default="0.2", type=int, help="Time to wait for")
 def lights(duration, wait):
 
     setup_gpio()
-    asyncio.run(test_lights())
+    asyncio.run(test_lights(duration = duration, wait = wait))
     cleanup_gpio()
