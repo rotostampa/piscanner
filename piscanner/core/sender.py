@@ -6,7 +6,7 @@ from piscanner.utils.machine import get_hostname
 import ssl
 import re
 from piscanner.utils.datastructures import data
-from piscanner.utils.storage import default_settings
+from urllib.parse import urlparse, parse_qs
 
 
 async def handle_remote_barcodes(barcodes, verbose):
@@ -17,7 +17,7 @@ async def handle_remote_barcodes(barcodes, verbose):
 
     # return {info.barcode: "Ok" for info in barcodes}
 
-    url = "{HOST}{PATH}".format(**settings)
+    url = "{URL}".format(**settings)
 
     # Build form data
     form_data = [("hostname", hostname)]
@@ -60,18 +60,48 @@ async def handle_remote_barcodes(barcodes, verbose):
                     info.barcode: "HTTPError{}".format(response.status)
                     for info in barcodes
                 }
-        except aiohttp.client_exceptions.ClientConnectorError as e:
+        except (
+            aiohttp.client_exceptions.ClientConnectorError,
+            aiohttp.client_exceptions.InvalidUrlClientError,
+        ) as e:
             if verbose:
                 print(f"⚠️ Error sending barcodes: {e}")
 
-            return {info.barcode: "ConnectionError" for info in barcodes}
+            return {info.barcode: e.__class__.__name__ for info in barcodes}
 
 
-async def handle_settings_barcodes(barcodes, **opts):
+async def handle_settings_barcodes(barcodes, verbose=False, **opts):
 
-    await set_setting({info.name: info.value for info in barcodes})
+    result = {}
 
-    return {info.barcode: "SettingChanged" for info in barcodes}
+    settings = {}
+
+    for info in barcodes:
+
+        if verbose:
+            print(f"⏳ Processing barcode: {info.barcode}")
+
+        parsed = urlparse(info.barcode)
+
+        if (
+            not parsed.scheme == "piscanner"
+            and not parsed.path == ""
+            and not parsed.netloc == "settings"
+        ):
+            result[info.barcode] = "InvalidBarcode"
+
+        else:
+
+            result[info.barcode] = "SettingChanged"
+
+            for k, values in parse_qs(parsed.query).items():
+                for v in values:
+                    settings[k] = v
+
+    if settings:
+        await set_setting(settings)
+
+    return result
 
 
 async def handle_invalid_barcodes(barcodes, **opts):
@@ -81,12 +111,10 @@ async def handle_invalid_barcodes(barcodes, **opts):
 
 matchers = (
     (
-        re.compile(
-            "(?P<name>{})X(?P<value>.*)".format("|".join(default_settings.keys()))
-        ),
+        re.compile(r"piscanner://.*"),
         handle_settings_barcodes,
     ),
-    (re.compile("44X(?P<id>.*)"), handle_remote_barcodes),
+    (re.compile("[0-9]+X.*"), handle_remote_barcodes),
 )
 
 
@@ -110,8 +138,11 @@ async def start_sender(sleep_duration=5, verbose=False, **opts):
                 for compiled, func in matchers:
                     if match := compiled.match(r):
                         if verbose:
-                            print(f"🧑🏼‍🔬 Matched barcode {r} with function {func.__name__}")
+                            print(
+                                f"🧑🏼‍🔬 Matched barcode {r} with function {func.__name__}"
+                            )
                         groups[func].append(data(barcode=r, **match.groupdict()))
+                        break
 
                 if not match:
                     if verbose:

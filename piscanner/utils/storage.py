@@ -104,14 +104,6 @@ async def init():
             """
         )
 
-        # Set default settings while we still have the connection and lock
-        # Use the existing connection for setting defaults
-        await _set_setting_internal(
-            settings_dict=default_settings,
-            overwrite_settings=False,
-            db_connection=db,
-        )
-
 
 async def insert_barcode(barcode: str, status: str = "Scanned"):
     async with db_transaction() as db:
@@ -242,9 +234,6 @@ async def set_status_mapping(status_to_ids_mapping):
 
     sql_script = "\n".join(script_parts)
 
-    print("SQL")
-    print(sql_script)
-
     # Execute all updates in a single transaction
     async with db_transaction() as db:
         await db.executescript(sql_script)
@@ -259,62 +248,16 @@ async def get_settings():
     Returns:
         dict: Dictionary of all settings (key-value pairs)
     """
+
+    settings = data(**default_settings)
+
     async with db_readonly() as db:
         cursor = await db.execute("SELECT key, value FROM settings ORDER BY key")
 
-        settings = data()
         async for key, value in cursor:
             settings[key] = value
 
         return settings
-
-
-async def _set_setting_internal(settings_dict, db_connection, overwrite_settings=True):
-    """
-    Internal helper function to set settings using an existing connection.
-
-    Args:
-        settings_dict: Dictionary of settings to set
-        overwrite_settings: Whether to overwrite existing settings
-        db_connection: Database connection to use
-
-    Returns:
-        int: Number of records updated/inserted
-    """
-    if not settings_dict:
-        return 0
-
-    current_time = timestamp()
-    placeholders = ",".join(repeat("(?, ?, ?)", len(settings_dict)))
-    params = tuple(
-        param
-        for key, value in settings_dict.items()
-        for param in (key, value, current_time)
-    )
-
-    if overwrite_settings:
-        # If overwrite is enabled, update existing settings
-        cursor = await db_connection.execute(
-            f"""
-            INSERT INTO settings (key, value, created_timestamp)
-            VALUES {placeholders}
-            ON CONFLICT(key) DO UPDATE SET
-                value = excluded.value,
-                created_timestamp = excluded.created_timestamp
-            """,
-            params,
-        )
-    else:
-        # If overwrite is disabled, ignore conflicts (keep existing settings)
-        cursor = await db_connection.execute(
-            f"""
-            INSERT INTO settings (key, value, created_timestamp)
-            VALUES {placeholders}
-            ON CONFLICT(key) DO NOTHING
-            """,
-            params,
-        )
-    return cursor.rowcount
 
 
 async def set_setting(settings_dict):
@@ -332,6 +275,25 @@ async def set_setting(settings_dict):
         return 0
 
     async with db_transaction() as db:
-        return await _set_setting_internal(
-            settings_dict=settings_dict, overwrite_settings=True, db_connection=db
+
+        current_time = timestamp()
+        placeholders = ",".join(repeat("(?, ?, ?)", len(settings_dict)))
+        params = tuple(
+            param
+            for key, value in settings_dict.items()
+            for param in (key, value, current_time)
         )
+
+        # If overwrite is enabled, update existing settings
+        cursor = await db.execute(
+            f"""
+            INSERT INTO settings (key, value, created_timestamp)
+            VALUES {placeholders}
+            ON CONFLICT(key) DO UPDATE SET
+                value = excluded.value,
+                created_timestamp = excluded.created_timestamp
+            """,
+            params,
+        )
+
+        return cursor.rowcount
