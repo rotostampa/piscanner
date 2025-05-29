@@ -131,12 +131,27 @@ async def handle_client(request, verbose=False):
             margin-bottom: 0;
             position: relative;
         }}
-        .success-indicator {{
+        .card-success::before,
+        .card-error::before {{
             position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            color: var(--pico-color-green-500, #28a745);
-            font-size: 1.2rem;
+            top: 0;
+            right: 0.8rem;
+            width: 1.2rem;
+            height: 1.6rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%);
+            z-index: 1;
+            font-size: 0.7rem;
+            content: "✓";
+            background: #28a745;
+        }}
+        .card-error::before {{
+            content: "✗";
+            background: #dc3545;
         }}
         @media (min-width: 768px) {{
             .barcode-grid {{
@@ -156,30 +171,24 @@ async def handle_client(request, verbose=False):
 
     # Stream barcode rows one by one as cards
     async for row in read():
-        # Truncate barcode if longer than 21 characters
-        await write_chunk(
-            """
-            <article>
-              <div class="success-indicator">{success_indicator}</div>
-              <dl class="card-content">
-
+        # Determine card class based on success status
+        await write_chunk("""
+        <article class="{card_class}">
+            <dl class="card-content">
                 <dt>Barcode {id}</dt>
                 <dd title="{barcode}">{truncated_barcode}</dd>
-
                 <dt>Status</dt>
                 <dd>{status}</dd>
-
                 <dt>Processed</dt>
                 <dd>{timestamp}</dd>
-              </dl>
-            </article>
-        """.format(
-                **row,
-                truncated_barcode=truncate(row.barcode, 21),
-                success_indicator=is_success(row.status) and '&#x2713;' or '',
-                timestamp=format_date(row.completed_timestamp or row.created_timestamp),
-            )
-        )
+            </dl>
+        </article>
+""".format(
+            **row,
+            card_class= is_success(row.status) and "card-success" or "card-error",
+            truncated_barcode=truncate(row.barcode, 21),
+            timestamp=format_date(row.completed_timestamp or row.created_timestamp)
+        ))
 
     # Close barcodes grid
     await write_chunk("</div>")
