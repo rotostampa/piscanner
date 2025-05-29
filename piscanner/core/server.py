@@ -4,10 +4,12 @@ from piscanner.utils.storage import read, get_settings
 from piscanner.utils.machine import get_hostname, get_local_hostname
 from functools import partial
 
-def mask_value(key, value):
+def format_value(key, value):
     if key == "TOKEN" and value:
         return "********"
-    return value
+    if key == "INSECURE":
+        return bool(value) and "&#x2705;" or "&#x274C;"
+    return value or "&#9888;"
 
 async def handle_client(reader, writer, verbose=False):
     # Read and ignore client request
@@ -103,7 +105,7 @@ async def handle_client(reader, writer, verbose=False):
             <td>{value}</td>
             </tr>
         """.format(
-                key=key, value=mask_value(key, value)
+                key=key, value=format_value(key, value)
             )
         )
 
