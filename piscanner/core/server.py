@@ -6,11 +6,18 @@ from piscanner.utils.machine import get_hostname, get_local_hostname
 from functools import partial
 
 
+def truncate(text, length=40):
+    """Truncate text to specified length and add ellipsis if needed."""
+    if len(text) > length:
+        return text[:length] + "..."
+    return text
+
+
 def format_value(key, value):
     if key == "TOKEN" and value:
         return "".join(repeat("&bull;", 8))
     if key == "URL" and value:
-        return f"<a target='_blank' href='{value}'>{value}</a>"
+        return f"<a target='_blank' href='{value}'>{truncate(value)}</a>"
     if key == "INSECURE":
         return bool(value) and "&#x2713;" or "&mdash;"
     return value or "&mdash;"
@@ -56,47 +63,30 @@ async def handle_client(reader, writer, verbose=False):
         .barcode-grid {{
             display: grid;
             gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         }}
-        .barcode-card {{
-            padding: 1rem;
-            border-radius: 0.5rem;
-            background-color: var(--card-background-color);
-            box-shadow: var(--card-box-shadow);
-        }}
-        .barcode-card dl {{
+        .card-content {{
             display: grid;
             grid-template-columns: minmax(100px, 30%) 1fr;
             gap: 0.5rem;
             margin: 0;
+            padding: 0;
         }}
-        .barcode-card dt {{
+        .card-content dt {{
             font-weight: bold;
             color: var(--muted-color);
+            align-self: start;
         }}
-        .barcode-card dd {{
+        .card-content dd {{
             margin: 0;
+            align-self: start;
         }}
-        .settings-grid {{
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        }}
-        .settings-item {{
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            background-color: var(--card-background-color);
-            box-shadow: var(--card-box-shadow);
-        }}
-        .settings-key {{
-            font-weight: bold;
-            color: var(--muted-color);
-            margin-bottom: 0.5rem;
+        article {{
+            margin-bottom: 0;
         }}
         @media (min-width: 768px) {{
             .barcode-grid {{
-                grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             }}
         }}
     </style>
@@ -104,11 +94,8 @@ async def handle_client(reader, writer, verbose=False):
 <body class="container">
   <br/>
   <h1>&#129302; {hostname} <small style='color:gray;font-size:10px;padding-left: 30px'>Last updated &rarr; {time}</small></h1>
-  <article>
-    <header>
-        <strong>Barcodes</strong>
-    </header>
-    <div class="barcode-grid">
+  <h2>Barcodes</h2>
+  <div class="barcode-grid">
 """.format(
             **context
         )
@@ -116,14 +103,12 @@ async def handle_client(reader, writer, verbose=False):
 
     # Stream barcode rows one by one as cards
     async for row in read():
-        # Truncate barcode if longer than 20 characters
-        row.truncated_barcode = (
-            row.barcode[:21] + "..." if len(row.barcode) > 21 else row.barcode
-        )
+        # Truncate barcode if longer than 21 characters
+        row.truncated_barcode = truncate(row.barcode, 21)
         await write_chunk(
             """
-            <div class="barcode-card">
-              <dl>
+            <article>
+              <dl class="card-content">
                 <dt>ID</dt>
                 <dd>{id}</dd>
 
@@ -139,36 +124,33 @@ async def handle_client(reader, writer, verbose=False):
                 <dt>Completed</dt>
                 <dd><small>{completed_timestamp}</small></dd>
               </dl>
-            </div>
+            </article>
         """.format(
                 **row
             )
         )
 
     # Close barcodes grid
-    await write_chunk("</div></article>")
+    await write_chunk("</div>")
 
     # Add spacing between sections
     await write_chunk('<div style="margin: 20px 0;"></div>')
 
-    # Add settings section with grid
+    # Add settings section as a single card
     await write_chunk(
-        '''<article>
-           <header>
-             <strong>Settings</strong>
-           </header>
-           <div class="settings-grid">'''
+        '''<h2>Settings</h2>
+           <div class="barcode-grid">
+             <article>
+               <dl class="card-content">'''
     )
 
-    # Get and display settings as cards
+    # Get and display settings in the single card
     settings = await get_settings()
     for key, value in settings.items():
         await write_chunk(
             """
-            <div class="settings-item">
-              <div class="settings-key">{key}</div>
-              <div>{value}</div>
-            </div>
+                <dt>{key}</dt>
+                <dd>{value}</dd>
         """.format(
                 key=key, value=format_value(key, value)
             )
@@ -176,7 +158,7 @@ async def handle_client(reader, writer, verbose=False):
 
     # Write closing tags
     await write_chunk(
-        "</div></article><footer style='color:gray; text-align:center; margin-top: 2rem;'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>"
+        "</dl></article></div><footer style='color:gray; text-align:center; margin-top: 2rem;'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>"
     )
 
     # Last chunk
