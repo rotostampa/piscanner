@@ -33,7 +33,7 @@ async def handle_client(request, verbose=False):
 
     # Create streaming response
     response = web.StreamResponse()
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
     response.enable_chunked_encoding()
     await response.prepare(request)
 
@@ -126,8 +126,7 @@ async def handle_client(request, verbose=False):
               </dl>
             </article>
         """.format(
-                **row,
-                truncated_barcode = truncate(row.barcode, 21)
+                **row, truncated_barcode=truncate(row.barcode, 21)
             )
         )
 
@@ -139,10 +138,10 @@ async def handle_client(request, verbose=False):
 
     # Add settings section as a single card
     await write_chunk(
-        '''<h2>Settings</h2>
+        """<h2>Settings</h2>
            <div class="barcode-grid">
              <article>
-               <dl class="card-content">'''
+               <dl class="card-content">"""
     )
 
     # Get and display settings in the single card
@@ -174,8 +173,7 @@ async def handle_client(request, verbose=False):
 async def start_server(address="0.0.0.0", port=9999, verbose=False):
     app = web.Application()
 
-
-    app.router.add_get('/', partial(handle_client, verbose = verbose))
+    app.router.add_get("/", partial(handle_client, verbose=verbose))
 
     runner = web.AppRunner(app)
     await runner.setup()
