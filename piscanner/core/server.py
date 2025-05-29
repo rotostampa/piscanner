@@ -213,7 +213,7 @@ async def handle_client(request, verbose=False):
     await write_chunk("""            </dl>
         </article>
     </div>
-    <footer style='color: var(--pico-muted-color); text-align:center; margin-top: 2rem;'>
+    <footer style='color: var(--pico-muted-color); margin-top: 2rem;'>
         Made with &#10084;&#65039; by Rotostampa
     </footer>
     <br/>
