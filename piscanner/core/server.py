@@ -8,8 +8,8 @@ def format_value(key, value):
     if key == "TOKEN" and value:
         return "********"
     if key == "INSECURE":
-        return bool(value) and "&#x2713;" or "&#x2717;"
-    return value or "&#9888;"
+        return bool(value) and "&#x2713;" or "&mdash;"
+    return value or "&mdash;"
 
 async def handle_client(reader, writer, verbose=False):
     # Read and ignore client request
