@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Loading...</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <link rel="stylesheet" href="https://esm.sh/@picocss/pico@2/css/pico.min.css" />
     <script type="module">
         import { render, h, Component } from 'https://esm.sh/preact@10.19.3';
         import { useState, useEffect } from 'https://esm.sh/preact@10.19.3/hooks';
@@ -222,14 +222,17 @@
             font-weight: bold;
             color: var(--pico-muted-color);
             align-self: start;
+            transition: color 0.3s ease;
         }
         .card-content dd {
             margin: 0;
             align-self: start;
+            transition: color 0.3s ease;
         }
         article {
             margin-bottom: 0;
             position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
         }
         .card-success::before,
         .card-error::before {
@@ -248,6 +251,7 @@
             font-size: 0.7rem;
             content: "✓";
             background: var(--pico-ins-color);
+            transition: background-color 0.3s ease, opacity 0.3s ease;
         }
         .card-error::before {
             content: "✗";
@@ -255,9 +259,26 @@
         }
         .highlight.card-success {
             background-color: color-mix(in srgb, var(--pico-ins-color) 10%, var(--pico-card-background-color));
+            animation: highlight-pulse 0.6s ease-out;
         }
         .highlight.card-error {
             background-color: color-mix(in srgb, var(--pico-del-color) 10%, var(--pico-card-background-color));
+            animation: highlight-pulse 0.6s ease-out;
+        }
+        
+        @keyframes highlight-pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(var(--pico-primary-rgb), 0.4);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 0 10px rgba(var(--pico-primary-rgb), 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(var(--pico-primary-rgb), 0);
+            }
         }
         @media (min-width: 768px) {
             .barcode-grid {
