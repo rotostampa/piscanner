@@ -146,16 +146,13 @@ async def handle_client(request, verbose=False):
     </style>
 </head>
 <body class="container">
-  <br/>
-  <div class="header-title">
-    <h1>&#129302; {hostname}</h1>
-    <small class="last-updated">Last updated &rarr; {time}</small>
-  </div>
-  <div class="barcode-grid">
-""".format(
-            **context
-        )
-    )
+    <br/>
+    <div class="header-title">
+        <h1>&#129302; {hostname}</h1>
+        <small class="last-updated">Last updated &rarr; {time}</small>
+    </div>
+    <div class="barcode-grid">
+""".format(**context))
 
     # Stream barcode rows one by one as cards
     async for row in read():
@@ -206,19 +203,18 @@ async def handle_client(request, verbose=False):
     # Get and display settings in the single card
     settings = await get_settings()
     for key, value in settings.items():
-        await write_chunk(
-            """
-                <dt>{key}</dt>
-                <dd>{value}</dd>
-        """.format(
-                key=key, value=format_value(key, value)
-            )
-        )
+        await write_chunk("""<dt>{key}</dt><dd>{value}</dd>""".format(key=key, value=format_value(key, value)))
 
     # Write closing tags
-    await write_chunk(
-        "</dl></article></div><footer style='color:gray; text-align:center; margin-top: 2rem;'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>"
-    )
+    await write_chunk("""            </dl>
+        </article>
+    </div>
+    <footer style='color:gray; text-align:center; margin-top: 2rem;'>
+        Made with &#10084;&#65039; by Rotostampa
+    </footer>
+    <br/>
+</body>
+</html>""")
 
     # Close the response
     if is_connection_valid(request, response):
