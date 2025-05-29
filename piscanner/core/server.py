@@ -1,12 +1,13 @@
 import asyncio
 import datetime
+from itertools import repeat
 from piscanner.utils.storage import read, get_settings
 from piscanner.utils.machine import get_hostname, get_local_hostname
 from functools import partial
 
 def format_value(key, value):
     if key == "TOKEN" and value:
-        return "********"
+        return "".join(repeat("&bull;", 8))
     if key == "INSECURE":
         return bool(value) and "&#x2713;" or "&mdash;"
     return value or "&mdash;"
