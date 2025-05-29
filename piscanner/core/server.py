@@ -9,6 +9,8 @@ from functools import partial
 def format_value(key, value):
     if key == "TOKEN" and value:
         return "".join(repeat("&bull;", 8))
+    if key == "URL" and value:
+        return f"<a target='_blank' href='{value}'>{value}</a>"
     if key == "INSECURE":
         return bool(value) and "&#x2713;" or "&mdash;"
     return value or "&mdash;"
