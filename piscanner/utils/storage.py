@@ -111,7 +111,7 @@ async def insert_barcode(barcode: str, status: str = "Scanned"):
         )
 
 
-async def read(limit=50, not_uploaded_only=False):
+async def read(limit=50, not_uploaded_only=False, default = None):
     """
     Read records from the database.
 
@@ -140,7 +140,7 @@ async def read(limit=50, not_uploaded_only=False):
                 id=id,
                 barcode=barcode,
                 created_timestamp=timestamp_to_datetime(created_timestamp),
-                completed_timestamp=timestamp_to_datetime(completed_timestamp),
+                completed_timestamp=timestamp_to_datetime(completed_timestamp) or default, # default only here everything is not null
                 status=status,
             )
 

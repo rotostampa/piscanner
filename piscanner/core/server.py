@@ -131,7 +131,7 @@ async def handle_client(request, verbose=False):
     )
 
     # Stream barcode rows one by one as cards
-    async for row in read():
+    async for row in read(default = "&mdash;"):
         # Truncate barcode if longer than 21 characters
         await write_chunk(
             """
@@ -148,7 +148,7 @@ async def handle_client(request, verbose=False):
                 <dd><small>{created_timestamp}</small></dd>
 
                 <dt>Completed</dt>
-                <dd><small>{completed_timestamp or '&mdash;'}</small></dd>
+                <dd><small>{completed_timestamp}</small></dd>
               </dl>
             </article>
         """.format(
