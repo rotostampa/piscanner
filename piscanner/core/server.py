@@ -24,7 +24,7 @@ def format_date(dt):
 
 def is_success(status):
     """Check if status indicates success (starts with 'Moved')."""
-    return status and status.startswith("Moved")
+    return status.startswith("Moved") or status in ("SettingsChanged",)
 
 
 def format_value(key, value):
@@ -37,8 +37,10 @@ def format_value(key, value):
             return f"<a target='_blank' href='{value}'>{netloc}</a>"
     return value or "&mdash;"
 
+
 def is_connection_valid(request, response):
     return request.transport and not request.transport.is_closing()
+
 
 async def handle_client(request, verbose=False):
     context = dict(
@@ -156,10 +158,13 @@ async def handle_client(request, verbose=False):
     )
 
     # Stream barcode rows one by one as cards
-    async for row in read(
-    ):
+    async for row in read():
         # Truncate barcode if longer than 21 characters
-        success_indicator = '<div class="success-indicator">&#x2713;</div>' if is_success(row.get('status')) else ''
+        success_indicator = (
+            '<div class="success-indicator">&#x2713;</div>'
+            if is_success(row.get("status"))
+            else ""
+        )
         await write_chunk(
             """
             <article>
@@ -177,8 +182,10 @@ async def handle_client(request, verbose=False):
               </dl>
             </article>
         """.format(
-                **row, truncated_barcode=truncate(row.barcode, 21), success_indicator=success_indicator,
-                timestamp = format_date(row.completed_timestamp or row.created_timestamp)
+                **row,
+                truncated_barcode=truncate(row.barcode, 21),
+                success_indicator=success_indicator,
+                timestamp=format_date(row.completed_timestamp or row.created_timestamp),
             )
         )
 
