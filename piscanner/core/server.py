@@ -209,11 +209,8 @@ async def start_server(address="0.0.0.0", port=9999, verbose=False):
 
     print("🤖 Serving on http://{}:{}...".format(get_local_hostname(), port))
 
-    # Keep the server running
-    try:
-        await asyncio.Event().wait()
-    finally:
-        await runner.cleanup()
+    while True:
+        await asyncio.sleep(3600)
 
 
 def server_coroutines(*args, **opts):
