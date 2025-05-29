@@ -24,7 +24,7 @@ def format_date(dt):
 
 def is_success(status):
     """Check if status indicates success (starts with 'Moved')."""
-    return status.startswith("Moved") or status in ("SettingsChanged",)
+    return status.startswith("Moved") or status in ("SettingsChanged", "Scanned")
 
 
 def is_recent(created_timestamp, seconds=10):
