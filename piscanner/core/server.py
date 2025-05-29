@@ -1,10 +1,11 @@
 import asyncio
 import datetime
-from functools import partial
 from itertools import repeat
+from functools import partial
 from piscanner.utils.storage import read, get_settings
 from piscanner.utils.machine import get_hostname, get_local_hostname
 from aiohttp import web
+from urllib.parse import urlparse
 
 
 def truncate(text, length=40):
@@ -17,10 +18,11 @@ def truncate(text, length=40):
 def format_value(key, value):
     if key == "TOKEN" and value:
         return "".join(repeat("&bull;", 8))
-    if key == "URL" and value:
-        return f"<a target='_blank' href='{value}'>{truncate(value)}</a>"
     if key == "INSECURE":
         return bool(value) and "&#x2713;" or "&mdash;"
+    if key == "URL" and value:
+        if netloc := urlparse(value).netloc or value:
+            return f"<a target='_blank' href='{value}'>{netloc}</a>"
     return value or "&mdash;"
 
 
@@ -63,6 +65,27 @@ async def handle_client(request, verbose=False):
             overflow-x: hidden;
             overflow-y: auto;
         }}
+        .header-title {{
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }}
+        .last-updated {{
+            color: gray;
+            font-size: 10px;
+        }}
+        @media (max-width: 767px) {{
+            .header-title {{
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+                margin-bottom: 1.5rem;
+            }}
+            .last-updated {{
+                font-size: 12px;
+            }}
+        }}
         .barcode-grid {{
             display: grid;
             gap: 1rem;
@@ -96,7 +119,10 @@ async def handle_client(request, verbose=False):
 </head>
 <body class="container">
   <br/>
-  <h1>&#129302; {hostname} <small style='color:gray;font-size:10px;padding-left: 30px'>Last updated &rarr; {time}</small></h1>
+  <div class="header-title">
+    <h1>&#129302; {hostname}</h1>
+    <small class="last-updated">Last updated &rarr; {time}</small>
+  </div>
   <h2>Barcodes</h2>
   <div class="barcode-grid">
 """.format(
