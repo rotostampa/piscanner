@@ -240,9 +240,7 @@ async def get_settings():
         dict: Dictionary of all settings (key-value pairs)
     """
 
-    settings = data(
-        TOKEN="", URL="", BARCODE_VAR="", HOSTNAME_VAR="", INSECURE=""
-    )
+    settings = data(TOKEN="", URL="", BARCODE_VAR="", HOSTNAME_VAR="", INSECURE="")
 
     async with db_readonly() as db:
         cursor = await db.execute("SELECT key, value FROM settings ORDER BY key")
