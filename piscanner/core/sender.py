@@ -1,5 +1,4 @@
 import asyncio
-from os import stat
 import aiohttp
 from collections import defaultdict
 from piscanner.utils.storage import read, set_status_mapping, set_setting, get_settings
@@ -11,6 +10,7 @@ from urllib.parse import urlparse, parse_qs
 from asyncio.tasks import ensure_future
 from piscanner.utils.lights import flash_green, flash_red
 
+
 async def attempt_status_parse(response, settings, verbose):
 
     try:
@@ -19,10 +19,12 @@ async def attempt_status_parse(response, settings, verbose):
         return
 
     if verbose:
-        print('🌎 server response', content)
+
+        print(f"🌎 server response {response.status} {response.reason}", content)
 
     if isinstance(content, dict):
         return content.get(settings.STATUS_VAR or "status")
+
 
 async def handle_remote_barcodes(barcodes, verbose):
     # API endpoint details
@@ -68,30 +70,21 @@ async def handle_remote_barcodes(barcodes, verbose):
                 ssl=ssl_context,
             ) as response:
 
-                status = await attempt_status_parse(response, settings,  verbose=verbose)
+                status = await attempt_status_parse(response, settings, verbose=verbose)
 
-                if response.status == 200:
+                if response.status == 200 and status:
                     print(f"✅ Successfully sent {len(barcodes)} barcodes")
-
-                    if not status:
-
-                        ensure_future(flash_red())
-
-                        return {info.barcode: "InvalidJson" for info in barcodes}
 
                     ensure_future(flash_green())
 
                     return {
-                        info.barcode: isinstance(status, dict) and status.get(info.barcode) or status
+                        info.barcode: isinstance(status, dict)
+                        and status.get(info.barcode)
+                        or status
                         for info in barcodes
                     }
 
                 ensure_future(flash_red())
-
-                if verbose:
-                    print(
-                        f"⚠️ Error sending barcodes: {response.status} {response.reason}"
-                    )
 
                 return {
                     info.barcode: status or "HTTPError{}".format(response.status)
