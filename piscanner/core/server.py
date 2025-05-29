@@ -60,6 +60,18 @@ async def handle_client(reader, writer, verbose=False):
     <title>{hostname}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
     <style>
+        /* Hide scrollbars for all browsers */
+        html {{
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* Internet Explorer 10+ */
+        }}
+        html::-webkit-scrollbar {{
+            display: none; /* WebKit browsers (Chrome, Safari, Edge) */
+        }}
+        body {{
+            overflow-x: hidden;
+            overflow-y: auto;
+        }}
         .barcode-grid {{
             display: grid;
             gap: 1rem;
@@ -109,10 +121,8 @@ async def handle_client(reader, writer, verbose=False):
             """
             <article>
               <dl class="card-content">
-                <dt>ID</dt>
-                <dd>{id}</dd>
 
-                <dt>Barcode</dt>
+                <dt>Barcode {id}</dt>
                 <dd title="{barcode}">{truncated_barcode}</dd>
 
                 <dt>Status</dt>
