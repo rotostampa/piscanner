@@ -3,7 +3,7 @@ import datetime
 from itertools import repeat
 from piscanner.utils.storage import read, get_settings
 from piscanner.utils.machine import get_hostname, get_local_hostname
-from functools import partial
+from aiohttp import web
 
 
 def truncate(text, length=40):
@@ -23,31 +23,21 @@ def format_value(key, value):
     return value or "&mdash;"
 
 
-async def handle_client(reader, writer, verbose=False):
-    # Read and ignore client request
-    await reader.read(1024)
-
+async def handle_client(request, verbose=False):
     context = dict(
         hostname=get_hostname(),
         time=datetime.datetime.now().time().strftime("%H:%M:%S"),
         year=datetime.date.today().year,
     )
 
-    # Write response headers
-    headers = (
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html; charset=utf-8\r\n"
-        "Transfer-Encoding: chunked\r\n"
-        "\r\n"
-    )
-    writer.write(headers.encode())
-    await writer.drain()
+    # Create streaming response
+    response = web.StreamResponse()
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    response.enable_chunked_encoding()
+    await response.prepare(request)
 
     async def write_chunk(data: str):
-        writer.write(f"{len(data):X}\r\n".encode())
-        writer.write(data.encode())
-        writer.write(b"\r\n")
-        await writer.drain()
+        await response.write(data.encode())
 
     # Write the first chunk: HTML header + styled container with responsive grid
     await write_chunk(
@@ -116,7 +106,6 @@ async def handle_client(reader, writer, verbose=False):
     # Stream barcode rows one by one as cards
     async for row in read():
         # Truncate barcode if longer than 21 characters
-        row.truncated_barcode = truncate(row.barcode, 21)
         await write_chunk(
             """
             <article>
@@ -136,7 +125,8 @@ async def handle_client(reader, writer, verbose=False):
               </dl>
             </article>
         """.format(
-                **row
+                **row,
+                truncated_barcode = truncate(row.barcode, 21)
             )
         )
 
@@ -171,24 +161,37 @@ async def handle_client(reader, writer, verbose=False):
         "</dl></article></div><footer style='color:gray; text-align:center; margin-top: 2rem;'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>"
     )
 
-    # Last chunk
-    writer.write(b"0\r\n\r\n")
-    await writer.drain()
-
-    writer.close()
-    await writer.wait_closed()
+    # Close the response
+    await response.write_eof()
 
     if verbose:
         print("🤖 server request completed")
 
+    return response
+
 
 async def start_server(address="0.0.0.0", port=9999, verbose=False):
-    server = await asyncio.start_server(
-        partial(handle_client, verbose=verbose), address, port
-    )
+    app = web.Application()
+
+    # Create handler with verbose parameter
+    async def handler(request):
+        return await handle_client(request, verbose=verbose)
+
+    app.router.add_get('/', handler)
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+
+    site = web.TCPSite(runner, address, port)
+    await site.start()
+
     print("🤖 Serving on http://{}:{}...".format(get_local_hostname(), port))
-    async with server:
-        await server.serve_forever()
+
+    # Keep the server running
+    try:
+        await asyncio.Event().wait()
+    finally:
+        await runner.cleanup()
 
 
 def server_coroutines(*args, **opts):
