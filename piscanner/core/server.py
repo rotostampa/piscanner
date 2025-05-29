@@ -37,6 +37,8 @@ def format_value(key, value):
             return f"<a target='_blank' href='{value}'>{netloc}</a>"
     return value or "&mdash;"
 
+def is_connection_valid(request, response):
+    return request.transport and not request.transport.is_closing()
 
 async def handle_client(request, verbose=False):
     context = dict(
@@ -52,7 +54,11 @@ async def handle_client(request, verbose=False):
     await response.prepare(request)
 
     async def write_chunk(data: str):
-        await response.write(data.encode())
+        if is_connection_valid(request, response):
+            try:
+                await response.write(data.encode())
+            except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
+                pass
 
     # Write the first chunk: HTML header + styled container with responsive grid
     await write_chunk(
@@ -209,7 +215,8 @@ async def handle_client(request, verbose=False):
     )
 
     # Close the response
-    await response.write_eof()
+    if is_connection_valid(request, response):
+        await response.write_eof()
 
     if verbose:
         print("🤖 server request completed")
