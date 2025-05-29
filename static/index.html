@@ -1,301 +1,383 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Loading...</title>
-    <link rel="stylesheet" href="https://esm.sh/@picocss/pico@2/css/pico.min.css" />
-    <script type="module">
-        import { render, h, Component } from 'https://esm.sh/preact@10.19.3';
-        import { useState, useEffect } from 'https://esm.sh/preact@10.19.3/hooks';
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Loading...</title>
+        <link
+            rel="stylesheet"
+            href="https://esm.sh/@picocss/pico@2/css/pico.min.css"
+        />
+        <script type="module">
+            import {
+                render,
+                h,
+                Component,
+            } from "https://esm.sh/preact@10.19.3";
+            import {
+                useState,
+                useEffect,
+            } from "https://esm.sh/preact@10.19.3/hooks";
 
-        const API_ENDPOINT = '/refresh/';
-        const REFRESH_INTERVAL = 3000;
+            const API_ENDPOINT = "/refresh/";
+            const REFRESH_INTERVAL = 3000;
 
-        function truncate(text, length = 40) {
-            if (!text) return '';
-            if (text.length > length) {
-                return text.substring(0, length) + '...';
-            }
-            return text;
-        }
-
-        function getBarcodeCardClass(barcode) {
-            let classes = [];
-            
-            if (barcode.is_success) {
-                classes.push('card-success');
-            } else {
-                classes.push('card-error');
-            }
-            
-            if (barcode.is_recent) {
-                classes.push('highlight');
-            }
-            
-            return classes.join(' ');
-        }
-
-        function LoadingSpinner() {
-            return h('div', { className: 'loading' },
-                h('p', { 'aria-busy': 'true' }, 'Loading data...')
-            );
-        }
-
-        function ErrorMessage({ error, onRetry }) {
-            return h('div', { className: 'error' },
-                h('p', null, 'Error loading data: ', error),
-                h('button', { className: 'secondary', onClick: onRetry }, 'Retry')
-            );
-        }
-
-        function BarcodeCard({ barcode }) {
-            return h('article', { className: getBarcodeCardClass(barcode) },
-                h('dl', { className: 'card-content' },
-                    h('dt', null, `#${barcode.id}`),
-                    h('dd', { title: barcode.barcode }, truncate(barcode.barcode, 21)),
-                    h('dt', null, 'Status'),
-                    h('dd', null, barcode.status),
-                    h('dt', null, 'Processed'),
-                    h('dd', null, barcode.completed_timestamp || barcode.created_timestamp)
-                )
-            );
-        }
-
-        function SettingsCard({ settings }) {
-            const settingsEntries = Object.entries(settings || {});
-            
-            return h('article', null,
-                h('dl', { className: 'card-content' },
-                    ...settingsEntries.map(([key, value]) => [
-                        h('dt', { key: `${key}-label` }, key),
-                        h('dd', { 
-                            key: `${key}-value`, 
-                            dangerouslySetInnerHTML: { __html: value } 
-                        })
-                    ]).flat()
-                )
-            );
-        }
-
-        function MainContent({ data }) {
-            return h('div', null,
-                h('div', { className: 'barcode-grid' },
-                    ...(data.barcodes || []).map(barcode => 
-                        h(BarcodeCard, { key: barcode.id, barcode })
-                    )
-                ),
-                h('div', { style: { margin: '20px 0' } }),
-                h('h2', { style: { textAlign: 'center' } }, 'Settings'),
-                h('div', { className: 'barcode-grid' },
-                    h(SettingsCard, { settings: data.settings })
-                ),
-                h('footer', { 
-                    style: { 
-                        textAlign: 'center', 
-                        color: 'var(--pico-muted-color)', 
-                        marginTop: '2rem' 
-                    } 
-                }, 'Made with ❤️ by Rotostampa')
-            );
-        }
-
-        function App() {
-            const [data, setData] = useState({});
-            const [loading, setLoading] = useState(true);
-            const [error, setError] = useState(null);
-
-            const fetchData = async () => {
-                try {
-                    if (loading) setError(null);
-                    
-                    const response = await fetch(API_ENDPOINT);
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const newData = await response.json();
-                    
-                    // Only update state if data actually changed
-                    const dataChanged = JSON.stringify(newData) !== JSON.stringify(data);
-                    if (dataChanged || loading) {
-                        setData(newData);
-                        
-                        // Update page title
-                        if (newData.hostname?.hostname) {
-                            document.title = newData.hostname.hostname;
-                        }
-                    }
-                    
-                    if (loading) setLoading(false);
-                    if (error) setError(null);
-                    
-                } catch (err) {
-                    setError(err.message);
-                    if (loading) setLoading(false);
-                    console.error('Failed to fetch data:', err);
+            function truncate(text, length = 40) {
+                if (!text) return "";
+                if (text.length > length) {
+                    return text.substring(0, length) + "...";
                 }
-            };
+                return text;
+            }
 
-            const handleRetry = () => {
-                setLoading(true);
-                fetchData();
-            };
+            function getBarcodeCardClass(barcode) {
+                let classes = [];
 
-            useEffect(() => {
-                fetchData();
-                
-                const interval = setInterval(fetchData, REFRESH_INTERVAL);
-                
-                return () => clearInterval(interval);
-            }, []);
+                if (barcode.is_success) {
+                    classes.push("card-success");
+                } else {
+                    classes.push("card-error");
+                }
 
-            return h('div', { className: 'container' },
-                h('br'),
-                h('div', { className: 'header-title' },
-                    h('h1', null, h('span', { dangerouslySetInnerHTML: { __html: '&#129302;' } }), ' ', data.hostname?.hostname || 'PiScanner'),
-                    h('small', { className: 'last-updated' }, 
-                        'Last updated → ', data.hostname?.time || '--:--:--'
-                    )
-                ),
-                
-                loading && !data.hostname ? h(LoadingSpinner) : null,
-                error && !data.hostname ? h(ErrorMessage, { error, onRetry: handleRetry }) : null,
-                data.hostname ? h(MainContent, { data }) : null,
-                
-                h('br')
-            );
-        }
+                if (barcode.is_recent) {
+                    classes.push("highlight");
+                }
 
-        render(h(App), document.body);
-    </script>
-    <style>
-        /* Hide scrollbars for all browsers */
-        html {
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* Internet Explorer 10+ */
-        }
-        html::-webkit-scrollbar {
-            display: none; /* WebKit browsers (Chrome, Safari, Edge) */
-        }
-        body {
-            overflow-x: hidden;
-            overflow-y: auto;
-            margin: 0;
-        }
-        .header-title {
-            display: flex;
-            align-items: baseline;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-            text-align: center;
-        }
-        .last-updated {
-            color: var(--pico-muted-color);
-            font-size: 10px;
-        }
-        @media (max-width: 767px) {
+                return classes.join(" ");
+            }
+
+            function LoadingSpinner() {
+                return h(
+                    "div",
+                    { className: "loading" },
+                    h("p", { "aria-busy": "true" }, "Loading data..."),
+                );
+            }
+
+            function ErrorMessage({ error, onRetry }) {
+                return h(
+                    "div",
+                    { className: "error" },
+                    h("p", null, "Error loading data: ", error),
+                    h(
+                        "button",
+                        { className: "secondary", onClick: onRetry },
+                        "Retry",
+                    ),
+                );
+            }
+
+            function BarcodeCard({ barcode }) {
+                return h(
+                    "article",
+                    { className: getBarcodeCardClass(barcode) },
+                    h(
+                        "dl",
+                        { className: "card-content" },
+                        h("dt", null, `#${barcode.id}`),
+                        h(
+                            "dd",
+                            { title: barcode.barcode },
+                            truncate(barcode.barcode, 21),
+                        ),
+                        h("dt", null, "Status"),
+                        h("dd", null, barcode.status),
+                        h("dt", null, "Processed"),
+                        h("dd", {
+                            dangerouslySetInnerHTML: {
+                                __html:
+                                    barcode.completed_timestamp ||
+                                    barcode.created_timestamp,
+                            },
+                        }),
+                    ),
+                );
+            }
+
+            function SettingsCard({ settings }) {
+                const settingsEntries = Object.entries(settings || {});
+
+                return h(
+                    "article",
+                    null,
+                    h(
+                        "dl",
+                        { className: "card-content" },
+                        ...settingsEntries
+                            .map(([key, value]) => [
+                                h("dt", { key: `${key}-label` }, key),
+                                h("dd", {
+                                    key: `${key}-value`,
+                                    dangerouslySetInnerHTML: { __html: value },
+                                }),
+                            ])
+                            .flat(),
+                    ),
+                );
+            }
+
+            function MainContent({ data }) {
+                return h(
+                    "div",
+                    null,
+                    h(
+                        "div",
+                        { className: "barcode-grid" },
+                        ...(data.barcodes || []).map((barcode) =>
+                            h(BarcodeCard, { key: barcode.id, barcode }),
+                        ),
+                    ),
+                    h("div", { style: { margin: "20px 0" } }),
+                    h("h2", { style: { textAlign: "center" } }, "Settings"),
+                    h(
+                        "div",
+                        { className: "barcode-grid" },
+                        h(SettingsCard, { settings: data.settings }),
+                    ),
+                    h(
+                        "footer",
+                        {
+                            style: {
+                                textAlign: "center",
+                                color: "var(--pico-muted-color)",
+                                marginTop: "2rem",
+                            },
+                        },
+                        "Made with ❤️ by Rotostampa",
+                    ),
+                );
+            }
+
+            function App() {
+                const [data, setData] = useState({});
+                const [loading, setLoading] = useState(true);
+                const [error, setError] = useState(null);
+
+                const fetchData = async () => {
+                    try {
+                        if (loading) setError(null);
+
+                        const response = await fetch(API_ENDPOINT);
+                        if (!response.ok) {
+                            throw new Error(
+                                `HTTP ${response.status}: ${response.statusText}`,
+                            );
+                        }
+
+                        const newData = await response.json();
+
+                        // Only update state if data actually changed
+                        const dataChanged =
+                            JSON.stringify(newData) !== JSON.stringify(data);
+                        if (dataChanged || loading) {
+                            setData(newData);
+
+                            // Update page title
+                            if (newData.hostname?.hostname) {
+                                document.title = newData.hostname.hostname;
+                            }
+                        }
+
+                        if (loading) setLoading(false);
+                        if (error) setError(null);
+                    } catch (err) {
+                        setError(err.message);
+                        if (loading) setLoading(false);
+                        console.error("Failed to fetch data:", err);
+                    }
+                };
+
+                const handleRetry = () => {
+                    setLoading(true);
+                    fetchData();
+                };
+
+                useEffect(() => {
+                    fetchData();
+
+                    const interval = setInterval(fetchData, REFRESH_INTERVAL);
+
+                    return () => clearInterval(interval);
+                }, []);
+
+                return h(
+                    "div",
+                    { className: "container" },
+                    h("br"),
+                    h(
+                        "div",
+                        { className: "header-title" },
+                        h(
+                            "h1",
+                            null,
+                            h("span", {
+                                dangerouslySetInnerHTML: {
+                                    __html: "&#129302;",
+                                },
+                            }),
+                            " ",
+                            data.hostname?.hostname || "PiScanner",
+                        ),
+                        h(
+                            "small",
+                            { className: "last-updated" },
+                            "Last updated → ",
+                            data.hostname?.time || "--:--:--",
+                        ),
+                    ),
+
+                    loading && !data.hostname ? h(LoadingSpinner) : null,
+                    error && !data.hostname
+                        ? h(ErrorMessage, { error, onRetry: handleRetry })
+                        : null,
+                    data.hostname ? h(MainContent, { data }) : null,
+
+                    h("br"),
+                );
+            }
+
+            render(h(App), document.body);
+        </script>
+        <style>
+            /* Hide scrollbars for all browsers */
+            html {
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* Internet Explorer 10+ */
+            }
+            html::-webkit-scrollbar {
+                display: none; /* WebKit browsers (Chrome, Safari, Edge) */
+            }
+            body {
+                overflow-x: hidden;
+                overflow-y: auto;
+                margin: 0;
+            }
             .header-title {
-                flex-direction: column;
-                align-items: center;
-                gap: 0.25rem;
-                margin-bottom: 1.5rem;
+                display: flex;
+                align-items: baseline;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: center;
+                text-align: center;
             }
             .last-updated {
-                font-size: 12px;
+                color: var(--pico-muted-color);
+                font-size: 10px;
             }
-        }
-        .barcode-grid {
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        }
-        .card-content {
-            display: grid;
-            grid-template-columns: minmax(100px, 30%) 1fr;
-            gap: 0.5rem;
-            margin: 0;
-            padding: 0;
-        }
-        .card-content dt {
-            font-weight: bold;
-            color: var(--pico-muted-color);
-            align-self: start;
-            transition: color 0.3s ease;
-        }
-        .card-content dd {
-            margin: 0;
-            align-self: start;
-            transition: color 0.3s ease;
-        }
-        article {
-            margin-bottom: 0;
-            position: relative;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-        }
-        .card-success::before,
-        .card-error::before {
-            position: absolute;
-            top: 0;
-            right: 0.8rem;
-            width: 1.2rem;
-            height: 1.6rem;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%);
-            z-index: 1;
-            font-size: 0.7rem;
-            content: "✓";
-            background: var(--pico-ins-color);
-            transition: background-color 0.3s ease, opacity 0.3s ease;
-        }
-        .card-error::before {
-            content: "✗";
-            background: var(--pico-del-color);
-        }
-        .highlight.card-success {
-            background-color: color-mix(in srgb, var(--pico-ins-color) 10%, var(--pico-card-background-color));
-            animation: highlight-pulse 0.6s ease-out;
-        }
-        .highlight.card-error {
-            background-color: color-mix(in srgb, var(--pico-del-color) 10%, var(--pico-card-background-color));
-            animation: highlight-pulse 0.6s ease-out;
-        }
-        
-        @keyframes highlight-pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(var(--pico-primary-rgb), 0.4);
+            @media (max-width: 767px) {
+                .header-title {
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.25rem;
+                    margin-bottom: 1.5rem;
+                }
+                .last-updated {
+                    font-size: 12px;
+                }
             }
-            50% {
-                transform: scale(1.02);
-                box-shadow: 0 0 0 10px rgba(var(--pico-primary-rgb), 0);
-            }
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(var(--pico-primary-rgb), 0);
-            }
-        }
-        @media (min-width: 768px) {
             .barcode-grid {
-                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             }
-        }
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: var(--pico-muted-color);
-        }
-        .error {
-            text-align: center;
-            padding: 2rem;
-            color: var(--pico-del-color);
-        }
-    </style>
-</head>
-<body></body>
+            .card-content {
+                display: grid;
+                grid-template-columns: minmax(100px, 30%) 1fr;
+                gap: 0.5rem;
+                margin: 0;
+                padding: 0;
+            }
+            .card-content dt {
+                font-weight: bold;
+                color: var(--pico-muted-color);
+                align-self: start;
+                transition: color 1s ease;
+            }
+            .card-content dd {
+                margin: 0;
+                align-self: start;
+                transition: color 1s ease;
+            }
+            article {
+                margin-bottom: 0;
+                position: relative;
+                transition:
+                    background-color 1s ease,
+                    color 1s ease,
+                    transform 0.4s ease;
+            }
+            .card-success::before,
+            .card-error::before {
+                position: absolute;
+                top: 0;
+                right: 0.8rem;
+                width: 1.2rem;
+                height: 1.6rem;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%);
+                z-index: 1;
+                font-size: 0.7rem;
+                content: "✓";
+                background: var(--pico-ins-color);
+                transition:
+                    background-color 1s ease,
+                    opacity 0.3s ease;
+            }
+            .card-error::before {
+                content: "✗";
+                background: var(--pico-del-color);
+            }
+            .highlight.card-success {
+                background-color: color-mix(
+                    in srgb,
+                    var(--pico-ins-color) 10%,
+                    var(--pico-card-background-color)
+                );
+                animation: highlight-pulse 0.6s ease-out;
+            }
+            .highlight.card-error {
+                background-color: color-mix(
+                    in srgb,
+                    var(--pico-del-color) 10%,
+                    var(--pico-card-background-color)
+                );
+                animation: highlight-pulse 0.6s ease-out;
+            }
+
+            @keyframes highlight-pulse {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(var(--pico-primary-rgb), 0.4);
+                }
+                50% {
+                    transform: scale(1.02);
+                    box-shadow: 0 0 0 10px rgba(var(--pico-primary-rgb), 0);
+                }
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(var(--pico-primary-rgb), 0);
+                }
+            }
+            @media (min-width: 768px) {
+                .barcode-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+                }
+            }
+            .loading {
+                text-align: center;
+                padding: 2rem;
+                color: var(--pico-muted-color);
+            }
+            .error {
+                text-align: center;
+                padding: 2rem;
+                color: var(--pico-del-color);
+            }
+        </style>
+    </head>
+    <body></body>
 </html>
