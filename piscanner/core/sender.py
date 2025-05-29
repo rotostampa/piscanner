@@ -1,4 +1,5 @@
 import asyncio
+from os import stat
 import aiohttp
 from collections import defaultdict
 from piscanner.utils.storage import read, set_status_mapping, set_setting, get_settings
@@ -22,7 +23,6 @@ async def handle_remote_barcodes(barcodes, verbose):
     # Build form data
     form_data = [
         (settings.HOSTNAME_VAR or "hostname", hostname),
-        (settings.STEP_VAR or "step", settings.STEP)
     ]
     for info in barcodes:
         form_data.append((settings.BARCODE_VAR or "barcode", info.barcode))
@@ -63,14 +63,15 @@ async def handle_remote_barcodes(barcodes, verbose):
                     except ValueError:
                         content = None
 
-                    if not isinstance(content, dict):
+                    status = content and content.get("status")
+
+
+
+                    if not isinstance(content, dict) or not isinstance(status, dict):
 
                         ensure_future(flash_red())
 
                         return {info.barcode: "InvalidJson" for info in barcodes}
-
-                    status = content.get("status") or "Accepted"
-                    mapping = content.get("barcode_statuses") or {}
 
                     if verbose:
                         print('🌎 server response', content)

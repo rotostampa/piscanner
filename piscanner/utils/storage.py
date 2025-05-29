@@ -241,7 +241,7 @@ async def get_settings():
     """
 
     settings = data(
-        TOKEN="", URL="", STEP="", STEP_VAR="", BARCODE_VAR="", HOSTNAME_VAR="", INSECURE=""
+        TOKEN="", URL="", BARCODE_VAR="", HOSTNAME_VAR="", INSECURE=""
     )
 
     async with db_readonly() as db:
