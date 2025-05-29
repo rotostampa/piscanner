@@ -6,6 +6,8 @@ from piscanner.utils.storage import read, get_settings
 from piscanner.utils.machine import get_hostname, get_local_hostname
 from aiohttp import web
 from urllib.parse import urlparse
+import os
+import piscanner
 
 
 def truncate(text, length=40):
@@ -251,6 +253,48 @@ async def start_server(address="0.0.0.0", port=9999, verbose=False):
     app = web.Application()
 
     app.router.add_get("/", partial(handle_client, verbose=verbose))
+
+
+    static_path = os.path.abspath(os.path.join(os.path.dirname(piscanner.__file__), '..', 'static'))
+
+    # Serve index.html directly for /static/ route
+    async def serve_static_index(request):
+        return web.FileResponse(os.path.join(static_path, 'index.html'))
+
+    app.router.add_get('/static/', serve_static_index)
+
+    # Add JSON refresh endpoint
+    async def refresh_data(request):
+        # Collect hostname data
+
+        # Collect settings data
+        settings = await get_settings()
+        # Collect barcodes data
+        barcodes_data = []
+        async for row in read(
+
+
+        ):
+            barcode_entry = {
+                **row,
+                'created_timestamp': format_date(row.created_timestamp),
+                'completed_timestamp': format_date(row.completed_timestamp),
+                'is_success': is_success(row.status),
+                'is_recent': is_recent(row.created_timestamp)
+            }
+            barcodes_data.append(barcode_entry)
+
+        return web.json_response({
+            'hostname': get_hostname(),
+            'settings': {key: format_value(key, value) for key, value in settings.items()}
+            ,
+            'barcodes': barcodes_data
+        })
+
+    app.router.add_get('/refresh/', refresh_data)
+
+    # Add static file serving for /static/ route
+    app.router.add_static('/static/', static_path, name='static')
 
     runner = web.AppRunner(app)
     await runner.setup()
