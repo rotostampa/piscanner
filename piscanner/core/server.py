@@ -92,7 +92,7 @@ async def handle_client(request, verbose=False):
             gap: 0.5rem;
         }}
         .last-updated {{
-            color: gray;
+            color: var(--pico-muted-color);
             font-size: 10px;
         }}
         @media (max-width: 767px) {{
@@ -120,7 +120,7 @@ async def handle_client(request, verbose=False):
         }}
         .card-content dt {{
             font-weight: bold;
-            color: var(--muted-color);
+            color: var(--pico-muted-color);
             align-self: start;
         }}
         .card-content dd {{
@@ -138,7 +138,7 @@ async def handle_client(request, verbose=False):
             right: 0.8rem;
             width: 1.2rem;
             height: 1.6rem;
-            color: white;
+            color: var(--pico-contrast);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -147,11 +147,11 @@ async def handle_client(request, verbose=False):
             z-index: 1;
             font-size: 0.7rem;
             content: "✓";
-            background: #28a745;
+            background: var(--pico-ins-color);
         }}
         .card-error::before {{
             content: "✗";
-            background: #dc3545;
+            background: var(--pico-del-color);
         }}
         @media (min-width: 768px) {{
             .barcode-grid {{
@@ -213,7 +213,7 @@ async def handle_client(request, verbose=False):
     await write_chunk("""            </dl>
         </article>
     </div>
-    <footer style='color:gray; text-align:center; margin-top: 2rem;'>
+    <footer style='color: var(--pico-muted-color); text-align:center; margin-top: 2rem;'>
         Made with &#10084;&#65039; by Rotostampa
     </footer>
     <br/>
