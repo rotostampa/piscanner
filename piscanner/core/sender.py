@@ -15,7 +15,7 @@ async def attempt_status_parse(response, settings, verbose):
 
     try:
         content = await response.json()
-    except ValueError:
+    except (ValueError, aiohttp.client_exceptions.ContentTypeError):
         return
 
     if verbose:
