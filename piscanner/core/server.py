@@ -5,12 +5,14 @@ from piscanner.utils.storage import read, get_settings
 from piscanner.utils.machine import get_hostname, get_local_hostname
 from functools import partial
 
+
 def format_value(key, value):
     if key == "TOKEN" and value:
         return "".join(repeat("&bull;", 8))
     if key == "INSECURE":
         return bool(value) and "&#x2713;" or "&mdash;"
     return value or "&mdash;"
+
 
 async def handle_client(reader, writer, verbose=False):
     # Read and ignore client request
