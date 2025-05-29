@@ -131,7 +131,7 @@ async def handle_client(request, verbose=False):
     )
 
     # Stream barcode rows one by one as cards
-    async for row in read(default = "&mdash;"):
+    async for row in read(completed_timestamp_processor=lambda x: x or "&mdash;"):
         # Truncate barcode if longer than 21 characters
         await write_chunk(
             """
