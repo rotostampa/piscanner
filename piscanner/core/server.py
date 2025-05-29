@@ -152,8 +152,6 @@ async def handle_client(request, verbose=False):
 
     # Stream barcode rows one by one as cards
     async for row in read(
-        completed_timestamp_processor=format_date, 
-        created_timestamp_processor=format_date
     ):
         # Truncate barcode if longer than 21 characters
         success_indicator = '<div class="success-indicator">&#x2713;</div>' if is_success(row.get('status')) else ''
@@ -169,15 +167,13 @@ async def handle_client(request, verbose=False):
                 <dt>Status</dt>
                 <dd>{status}</dd>
 
-                <dt>Created</dt>
-                <dd><small>{created_timestamp}</small></dd>
-
-                <dt>Completed</dt>
-                <dd><small>{completed_timestamp}</small></dd>
+                <dt>Processed</dt>
+                <dd>{timestamp}</dd>
               </dl>
             </article>
         """.format(
-                **row, truncated_barcode=truncate(row.barcode, 21), success_indicator=success_indicator
+                **row, truncated_barcode=truncate(row.barcode, 21), success_indicator=success_indicator,
+                timestamp = format_date(row.completed_timestamp or row.created_timestamp)
             )
         )
 
