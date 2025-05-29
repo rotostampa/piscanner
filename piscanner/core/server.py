@@ -90,6 +90,8 @@ async def handle_client(request, verbose=False):
             align-items: baseline;
             flex-wrap: wrap;
             gap: 0.5rem;
+            justify-content: center;
+            text-align: center;
         }}
         .last-updated {{
             color: var(--pico-muted-color);
@@ -98,7 +100,7 @@ async def handle_client(request, verbose=False):
         @media (max-width: 767px) {{
             .header-title {{
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: center;
                 gap: 0.25rem;
                 margin-bottom: 1.5rem;
             }}
@@ -130,6 +132,7 @@ async def handle_client(request, verbose=False):
         article {{
             margin-bottom: 0;
             position: relative;
+
         }}
         .card-success::before,
         .card-error::before {{
@@ -198,7 +201,7 @@ async def handle_client(request, verbose=False):
 
     # Add settings section as a single card
     await write_chunk(
-        """<h2>Settings</h2>
+        """<h2 style="text-align: center;">Settings</h2>
            <div class="barcode-grid">
              <article>
                <dl class="card-content">"""
@@ -213,7 +216,7 @@ async def handle_client(request, verbose=False):
     await write_chunk("""            </dl>
         </article>
     </div>
-    <footer style='color: var(--pico-muted-color); margin-top: 2rem;'>
+    <footer style='text-align: center; color: var(--pico-muted-color); margin-top: 2rem;'>
         Made with &#10084;&#65039; by Rotostampa
     </footer>
     <br/>
