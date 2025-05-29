@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+from functools import partial
 from itertools import repeat
 from piscanner.utils.storage import read, get_settings
 from piscanner.utils.machine import get_hostname, get_local_hostname
@@ -173,11 +174,8 @@ async def handle_client(request, verbose=False):
 async def start_server(address="0.0.0.0", port=9999, verbose=False):
     app = web.Application()
 
-    # Create handler with verbose parameter
-    async def handler(request):
-        return await handle_client(request, verbose=verbose)
 
-    app.router.add_get('/', handler)
+    app.router.add_get('/', partial(handle_client, verbose = verbose))
 
     runner = web.AppRunner(app)
     await runner.setup()
