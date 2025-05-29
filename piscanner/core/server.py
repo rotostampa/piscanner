@@ -42,7 +42,7 @@ async def handle_client(reader, writer, verbose=False):
         writer.write(b"\r\n")
         await writer.drain()
 
-    # Write the first chunk: HTML header + styled table header inside a centered container
+    # Write the first chunk: HTML header + styled container with responsive grid
     await write_chunk(
         """<!DOCTYPE html>
 <html lang="en">
@@ -52,24 +52,69 @@ async def handle_client(reader, writer, verbose=False):
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{hostname}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <style>
+        .barcode-grid {{
+            display: grid;
+            gap: 1rem;
+        }}
+        .barcode-card {{
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: var(--card-background-color);
+            box-shadow: var(--card-box-shadow);
+        }}
+        .barcode-card dl {{
+            display: grid;
+            grid-template-columns: minmax(100px, 30%) 1fr;
+            gap: 0.5rem;
+            margin: 0;
+        }}
+        .barcode-card dt {{
+            font-weight: bold;
+            color: var(--muted-color);
+        }}
+        .barcode-card dd {{
+            margin: 0;
+        }}
+        .settings-grid {{
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }}
+        .settings-item {{
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: var(--card-background-color);
+            box-shadow: var(--card-box-shadow);
+        }}
+        .settings-key {{
+            font-weight: bold;
+            color: var(--muted-color);
+            margin-bottom: 0.5rem;
+        }}
+        @media (min-width: 768px) {{
+            .barcode-grid {{
+                grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            }}
+        }}
+    </style>
 </head>
-<body class="container flow">
+<body class="container">
   <br/>
   <h1>&#129302; {hostname} <small style='color:gray;font-size:10px;padding-left: 30px'>Last updated &rarr; {time}</small></h1>
-  <table>
-    <caption style="font-weight: bold; font-size: 1.2em; margin-bottom: 10px; text-align: left;">Barcodes</caption>
-    <thead>
-      <tr>
-        <th>ID</th><th>Barcode</th><th>Status</th><th>Created</th><th>Completed</th>
-      </tr>
-    </thead>
-    <tbody>
+  <article>
+    <header>
+        <strong>Barcodes</strong>
+    </header>
+    <div class="barcode-grid">
 """.format(
             **context
         )
     )
 
-    # Stream barcode rows one by one
+    # Stream barcode rows one by one as cards
     async for row in read():
         # Truncate barcode if longer than 20 characters
         row.truncated_barcode = (
@@ -77,38 +122,53 @@ async def handle_client(reader, writer, verbose=False):
         )
         await write_chunk(
             """
-            <tr>
-            <td>{id}</td>
-            <td title="{barcode}">{truncated_barcode}</td>
-            <td>{status}</td>
-            <td><small>{created_timestamp}</small></td>
-            <td><small>{completed_timestamp}</small></td>
-            </tr>
+            <div class="barcode-card">
+              <dl>
+                <dt>ID</dt>
+                <dd>{id}</dd>
+
+                <dt>Barcode</dt>
+                <dd title="{barcode}">{truncated_barcode}</dd>
+
+                <dt>Status</dt>
+                <dd>{status}</dd>
+
+                <dt>Created</dt>
+                <dd><small>{created_timestamp}</small></dd>
+
+                <dt>Completed</dt>
+                <dd><small>{completed_timestamp}</small></dd>
+              </dl>
+            </div>
         """.format(
                 **row
             )
         )
 
-    # Close barcodes table
-    await write_chunk("</tbody></table>")
+    # Close barcodes grid
+    await write_chunk("</div></article>")
 
-    # Add spacing between tables
+    # Add spacing between sections
     await write_chunk('<div style="margin: 20px 0;"></div>')
 
-    # Add settings table
+    # Add settings section with grid
     await write_chunk(
-        '<table><caption style="font-weight: bold; font-size: 1.2em; margin-bottom: 10px; text-align: left;">Settings</caption><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody>'
+        '''<article>
+           <header>
+             <strong>Settings</strong>
+           </header>
+           <div class="settings-grid">'''
     )
 
-    # Get and display settings
+    # Get and display settings as cards
     settings = await get_settings()
     for key, value in settings.items():
         await write_chunk(
             """
-            <tr>
-            <td>{key}</td>
-            <td>{value}</td>
-            </tr>
+            <div class="settings-item">
+              <div class="settings-key">{key}</div>
+              <div>{value}</div>
+            </div>
         """.format(
                 key=key, value=format_value(key, value)
             )
@@ -116,7 +176,7 @@ async def handle_client(reader, writer, verbose=False):
 
     # Write closing tags
     await write_chunk(
-        "</tbody></table><footer style='color:gray'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>"
+        "</div></article><footer style='color:gray; text-align:center; margin-top: 2rem;'>Made with &#10084;&#65039; by Rotostampa</footer><br/></body></html>"
     )
 
     # Last chunk
