@@ -38,58 +38,60 @@ def format_value(key, value):
     return value or "&mdash;"
 
 
+# Add JSON refresh endpoint
+async def refresh_data(request):
+    # Collect hostname data
+    hostname_data = {
+        "hostname": get_hostname(),
+        "time": datetime.datetime.now().time().strftime("%H:%M:%S"),
+        "year": datetime.date.today().year,
+    }
 
+    # Collect settings data
+    settings = await get_settings()
+    settings_data = {key: format_value(key, value) for key, value in settings.items()}
+
+    # Collect barcodes data
+    barcodes_data = []
+    async for row in read():
+        barcode_entry = {
+            "id": row.id,
+            "barcode": row.barcode,
+            "status": row.status,
+            "created_timestamp": format_date(row.created_timestamp),
+            "completed_timestamp": format_date(row.completed_timestamp),
+            "is_success": is_success(row.status),
+            "is_recent": (
+                is_recent(row.created_timestamp) if row.created_timestamp else False
+            ),
+        }
+        barcodes_data.append(barcode_entry)
+
+    return web.json_response(
+        {
+            "hostname": hostname_data,
+            "settings": settings_data,
+            "barcodes": barcodes_data,
+        }
+    )
 
 
 async def start_server(address="0.0.0.0", port=9999, verbose=False):
     app = web.Application()
 
-    static_path = os.path.abspath(os.path.join(os.path.dirname(piscanner.__file__), '..', 'static'))
+    static_path = os.path.abspath(
+        os.path.join(os.path.dirname(piscanner.__file__), "..", "static")
+    )
 
     # Serve Preact app for main route
     async def serve_main_app(request):
-        return web.FileResponse(os.path.join(static_path, 'index.html'))
+        return web.FileResponse(os.path.join(static_path, "index.html"))
 
     app.router.add_get("/", serve_main_app)
-    app.router.add_get('/static/', serve_main_app)
-
-    # Add JSON refresh endpoint
-    async def refresh_data(request):
-        # Collect hostname data
-        hostname_data = {
-            'hostname': get_hostname(),
-            'time': datetime.datetime.now().time().strftime("%H:%M:%S"),
-            'year': datetime.date.today().year
-        }
-        
-        # Collect settings data
-        settings = await get_settings()
-        settings_data = {key: format_value(key, value) for key, value in settings.items()}
-        
-        # Collect barcodes data
-        barcodes_data = []
-        async for row in read():
-            barcode_entry = {
-                'id': row.id,
-                'barcode': row.barcode,
-                'status': row.status,
-                'created_timestamp': format_date(row.created_timestamp),
-                'completed_timestamp': format_date(row.completed_timestamp),
-                'is_success': is_success(row.status),
-                'is_recent': is_recent(row.created_timestamp) if row.created_timestamp else False
-            }
-            barcodes_data.append(barcode_entry)
-
-        return web.json_response({
-            'hostname': hostname_data,
-            'settings': settings_data,
-            'barcodes': barcodes_data
-        })
-
-    app.router.add_get('/refresh/', refresh_data)
+    app.router.add_get("/refresh/", refresh_data)
 
     # Add static file serving for /static/ route
-    app.router.add_static('/static/', static_path, name='static')
+    # app.router.add_static('/static/', static_path, name='static')
 
     runner = web.AppRunner(app)
     await runner.setup()
