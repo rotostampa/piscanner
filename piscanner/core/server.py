@@ -191,7 +191,7 @@ async def handle_client(request, verbose=False):
         await write_chunk("""
         <article class="{card_status} {card_recent}">
             <dl class="card-content">
-                <dt>Barcode {id}</dt>
+                <dt>#{id}</dt>
                 <dd title="{barcode}">{truncated_barcode}</dd>
                 <dt>Status</dt>
                 <dd>{status}</dd>
