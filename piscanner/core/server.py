@@ -138,7 +138,7 @@ async def handle_client(request, verbose=False):
             right: 0.8rem;
             width: 1.2rem;
             height: 1.6rem;
-            color: var(--pico-contrast);
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
