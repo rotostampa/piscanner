@@ -148,7 +148,7 @@ async def handle_client(request, verbose=False):
                 <dd><small>{created_timestamp}</small></dd>
 
                 <dt>Completed</dt>
-                <dd><small>{completed_timestamp}</small></dd>
+                <dd><small>{completed_timestamp or '&mdash;'}</small></dd>
               </dl>
             </article>
         """.format(
