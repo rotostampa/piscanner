@@ -149,7 +149,6 @@ async def handle_client(request, verbose=False):
     <h1>&#129302; {hostname}</h1>
     <small class="last-updated">Last updated &rarr; {time}</small>
   </div>
-  <h2>Barcodes</h2>
   <div class="barcode-grid">
 """.format(
             **context
