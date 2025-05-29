@@ -27,6 +27,12 @@ def is_success(status):
     return status.startswith("Moved") or status in ("SettingsChanged",)
 
 
+def is_recent(created_timestamp, seconds=10):
+    """Check if barcode was created within the last N seconds."""
+    now = datetime.datetime.now(created_timestamp.tzinfo)
+    return (now - created_timestamp).total_seconds() <= seconds
+
+
 def format_value(key, value):
     if key == "TOKEN" and value:
         return "".join(repeat("&bull;", 8))
@@ -156,6 +162,12 @@ async def handle_client(request, verbose=False):
             content: "✗";
             background: var(--pico-del-color);
         }}
+        .highlight.card-success {{
+            background-color: color-mix(in srgb, var(--pico-ins-color) 10%, var(--pico-card-background-color));
+        }}
+        .highlight.card-error {{
+            background-color: color-mix(in srgb, var(--pico-del-color) 10%, var(--pico-card-background-color));
+        }}
         @media (min-width: 768px) {{
             .barcode-grid {{
                 grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -174,9 +186,10 @@ async def handle_client(request, verbose=False):
 
     # Stream barcode rows one by one as cards
     async for row in read():
-        # Determine card class based on success status
+
+
         await write_chunk("""
-        <article class="{card_class}">
+        <article class="{card_status} {card_recent}">
             <dl class="card-content">
                 <dt>Barcode {id}</dt>
                 <dd title="{barcode}">{truncated_barcode}</dd>
@@ -188,7 +201,8 @@ async def handle_client(request, verbose=False):
         </article>
 """.format(
             **row,
-            card_class= is_success(row.status) and "card-success" or "card-error",
+            card_status= is_success(row.status) and "card-success" or "card-error",
+            card_recent= is_recent(row.created_timestamp) and "highlight" or "",
             truncated_barcode=truncate(row.barcode, 21),
             timestamp=format_date(row.completed_timestamp or row.created_timestamp)
         ))
