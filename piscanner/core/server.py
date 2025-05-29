@@ -15,6 +15,18 @@ def truncate(text, length=40):
     return text
 
 
+def format_date(dt):
+    """Format datetime object or return long dash if None."""
+    if dt:
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+    return "&mdash;"
+
+
+def is_success(status):
+    """Check if status indicates success (starts with 'Moved')."""
+    return status and status.startswith("Moved")
+
+
 def format_value(key, value):
     if key == "TOKEN" and value:
         return "".join(repeat("&bull;", 8))
@@ -109,6 +121,14 @@ async def handle_client(request, verbose=False):
         }}
         article {{
             margin-bottom: 0;
+            position: relative;
+        }}
+        .success-indicator {{
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            color: var(--pico-color-green-500, #28a745);
+            font-size: 1.2rem;
         }}
         @media (min-width: 768px) {{
             .barcode-grid {{
@@ -131,11 +151,16 @@ async def handle_client(request, verbose=False):
     )
 
     # Stream barcode rows one by one as cards
-    async for row in read(completed_timestamp_processor=lambda x: x or "&mdash;"):
+    async for row in read(
+        completed_timestamp_processor=format_date, 
+        created_timestamp_processor=format_date
+    ):
         # Truncate barcode if longer than 21 characters
+        success_indicator = '<div class="success-indicator">&#x2713;</div>' if is_success(row.get('status')) else ''
         await write_chunk(
             """
             <article>
+              {success_indicator}
               <dl class="card-content">
 
                 <dt>Barcode {id}</dt>
@@ -152,7 +177,7 @@ async def handle_client(request, verbose=False):
               </dl>
             </article>
         """.format(
-                **row, truncated_barcode=truncate(row.barcode, 21)
+                **row, truncated_barcode=truncate(row.barcode, 21), success_indicator=success_indicator
             )
         )
 
