@@ -11,6 +11,18 @@ from urllib.parse import urlparse, parse_qs
 from asyncio.tasks import ensure_future
 from piscanner.utils.lights import flash_green, flash_red
 
+async def attempt_status_parse(response, settings, verbose):
+
+    try:
+        content = await response.json()
+    except ValueError:
+        return
+
+    if verbose:
+        print('🌎 server response', content)
+
+    if isinstance(content, dict):
+        return content.get(settings.STATUS_VAR or "status")
 
 async def handle_remote_barcodes(barcodes, verbose):
     # API endpoint details
@@ -55,35 +67,22 @@ async def handle_remote_barcodes(barcodes, verbose):
                 ),
                 ssl=ssl_context,
             ) as response:
+
+                status = await attempt_status_parse(response, settings,  verbose=verbose)
+
                 if response.status == 200:
                     print(f"✅ Successfully sent {len(barcodes)} barcodes")
 
-                    try:
-                        content = await response.json()
-                    except ValueError:
-                        content = None
-
-                    status = content and content.get("status")
-
-
-
-                    if not isinstance(content, dict) or not isinstance(status, dict):
+                    if not status:
 
                         ensure_future(flash_red())
 
                         return {info.barcode: "InvalidJson" for info in barcodes}
 
-                    if verbose:
-                        print('🌎 server response', content)
-
-                        for info in barcodes:
-                            print('🌎 barcode response', info.barcode, mapping.get(info.barcode))
-
                     ensure_future(flash_green())
 
-
                     return {
-                        info.barcode: mapping.get(info.barcode) or status
+                        info.barcode: isinstance(status, dict) and status.get(info.barcode) or status
                         for info in barcodes
                     }
 
@@ -95,7 +94,7 @@ async def handle_remote_barcodes(barcodes, verbose):
                     )
 
                 return {
-                    info.barcode: "HTTPError{}".format(response.status)
+                    info.barcode: status or "HTTPError{}".format(response.status)
                     for info in barcodes
                 }
         except (
