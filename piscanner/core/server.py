@@ -157,15 +157,10 @@ async def handle_client(request, verbose=False):
     # Stream barcode rows one by one as cards
     async for row in read():
         # Truncate barcode if longer than 21 characters
-        success_indicator = (
-            '<div class="success-indicator">&#x2713;</div>'
-            if is_success(row.get("status"))
-            else ""
-        )
         await write_chunk(
             """
             <article>
-              {success_indicator}
+              <div class="success-indicator">{success_indicator}</div>
               <dl class="card-content">
 
                 <dt>Barcode {id}</dt>
@@ -181,7 +176,7 @@ async def handle_client(request, verbose=False):
         """.format(
                 **row,
                 truncated_barcode=truncate(row.barcode, 21),
-                success_indicator=success_indicator,
+                success_indicator=is_success(row.status) and '&#x2713;' or '',
                 timestamp=format_date(row.completed_timestamp or row.created_timestamp),
             )
         )
