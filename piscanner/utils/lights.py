@@ -14,7 +14,7 @@ def setup_gpio():
     if is_mac:
         return
 
-    import RPi.GPIO as GPIO
+    from RPi import GPIO
 
     GPIO.setmode(GPIO.BCM)
 
@@ -29,7 +29,7 @@ def cleanup_gpio():
     if is_mac:
         return
 
-    import RPi.GPIO as GPIO
+    from RPi import GPIO
 
     GPIO.cleanup()
 
@@ -45,7 +45,7 @@ async def control_light(
 ):
 
     if not is_mac:
-        import RPi.GPIO as GPIO
+        from RPi import GPIO
 
     async with lock:
 

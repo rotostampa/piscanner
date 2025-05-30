@@ -21,9 +21,8 @@ async def start_lights(check_seconds=5, wait_timout=5, verbose=False):
             await flash_red(wait=0, duration=0.1)
             await flash_yellow(wait=0, duration=0.1)
 
-        else:
-            if verbose:
-                print("💡 not flashing ")
+        elif verbose:
+            print("💡 not flashing ")
 
         # Wait before checking again
         await asyncio.sleep(wait_timout)
