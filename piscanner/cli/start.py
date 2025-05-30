@@ -2,11 +2,8 @@ from importlib import import_module
 import traceback
 import asyncio
 import click
-import signal
-import sys
 from piscanner.utils.storage import init
 from piscanner.utils.machine import is_mac
-from piscanner.utils.lights import setup_gpio, cleanup_gpio
 
 
 SERVICES = {
@@ -35,11 +32,7 @@ async def restart_on_failure(coroutine_func, *args, **kwargs):
             await asyncio.sleep(1)
 
 
-
-
 async def main(services, **kwargs):
-
-
 
     await init()
 
