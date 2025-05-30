@@ -1,11 +1,13 @@
-import aiosqlite
-import datetime
 import asyncio
-from piscanner.utils.machine import is_mac
+import datetime
 import os
-from itertools import repeat
-from piscanner.utils.datastructures import data
 from contextlib import asynccontextmanager
+from itertools import repeat
+
+import aiosqlite
+
+from piscanner.utils.datastructures import data
+from piscanner.utils.machine import is_mac
 
 DB_FILE = "piscanner-001.db"
 

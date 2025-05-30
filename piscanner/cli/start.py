@@ -1,11 +1,12 @@
-from importlib import import_module
-import traceback
 import asyncio
-import click
 import contextlib
-from piscanner.utils.storage import init
-from piscanner.utils.machine import is_mac
+import traceback
+from importlib import import_module
 
+import click
+
+from piscanner.utils.machine import is_mac
+from piscanner.utils.storage import init
 
 SERVICES = {
     "listener": ("piscanner.core.listener", "listener_coroutines"),

@@ -1,13 +1,13 @@
-import evdev
-import warnings
 import sys
+import warnings
+from asyncio.tasks import ensure_future
 
+import evdev
 from evdev.ecodes import ecodes
+
+from piscanner.utils.lights import flash_yellow
 from piscanner.utils.machine import get_hostname
 from piscanner.utils.storage import insert_barcode
-from asyncio.tasks import ensure_future
-from piscanner.utils.lights import flash_yellow
-
 
 BARCODE_TERMINATOR = ecodes["KEY_ENTER"]
 

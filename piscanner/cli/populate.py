@@ -1,9 +1,10 @@
-import click
 import asyncio
-from piscanner.utils.storage import init, insert_barcode, cleanup_db
-
 import random
 import string
+
+import click
+
+from piscanner.utils.storage import cleanup_db, init, insert_barcode
 
 
 def barcode(prefix):

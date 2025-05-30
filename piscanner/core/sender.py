@@ -1,14 +1,16 @@
 import asyncio
-import aiohttp
-from collections import defaultdict
-from piscanner.utils.storage import read, set_status_mapping, set_setting, get_settings
-from piscanner.utils.machine import get_hostname
-import ssl
 import re
-from piscanner.utils.datastructures import data
-from urllib.parse import urlparse, parse_qs
+import ssl
 from asyncio.tasks import ensure_future
+from collections import defaultdict
+from urllib.parse import parse_qs, urlparse
+
+import aiohttp
+
+from piscanner.utils.datastructures import data
 from piscanner.utils.lights import flash_green, flash_red
+from piscanner.utils.machine import get_hostname
+from piscanner.utils.storage import get_settings, read, set_setting, set_status_mapping
 
 
 async def attempt_status_parse(response, settings, verbose):

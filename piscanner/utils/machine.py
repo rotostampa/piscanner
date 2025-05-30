@@ -1,7 +1,6 @@
-import socket
-import platform
 import ipaddress
-
+import platform
+import socket
 
 is_mac = platform.system() == "Darwin"
 

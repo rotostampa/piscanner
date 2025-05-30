@@ -1,12 +1,14 @@
 import asyncio
 import datetime
-from itertools import repeat
-from piscanner.utils.storage import read, get_settings
-from piscanner.utils.machine import get_hostname, get_local_hostname
-from aiohttp import web
-from urllib.parse import urlparse
 import os
+from itertools import repeat
+from urllib.parse import urlparse
+
+from aiohttp import web
+
 import piscanner
+from piscanner.utils.machine import get_hostname, get_local_hostname
+from piscanner.utils.storage import get_settings, read
 
 
 def format_date(dt):

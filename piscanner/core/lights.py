@@ -1,8 +1,8 @@
 import asyncio
 import datetime
 
-from piscanner.utils.storage import get_latest_timestamp
 from piscanner.utils.lights import flash_green, flash_red, flash_yellow
+from piscanner.utils.storage import get_latest_timestamp
 
 
 async def start_lights(check_seconds=5, wait_timout=5, verbose=False):
