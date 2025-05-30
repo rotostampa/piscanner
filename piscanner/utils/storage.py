@@ -115,11 +115,6 @@ async def insert_barcode(barcode: str, status: str = "Scanned"):
 async def read(
     limit=50,
     not_uploaded_only=False,
-    id_processor=identity,
-    barcode_processor=identity,
-    created_timestamp_processor=identity,
-    completed_timestamp_processor=identity,
-    status_processor=identity,
 ):
     """
     Read records from the database.
@@ -146,15 +141,11 @@ async def read(
 
         async for id, barcode, created_timestamp, completed_timestamp, status in cursor:
             yield data(
-                id=id_processor(id),
-                barcode=barcode_processor(barcode),
-                created_timestamp=created_timestamp_processor(
-                    timestamp_to_datetime(created_timestamp)
-                ),
-                completed_timestamp=completed_timestamp_processor(
-                    timestamp_to_datetime(completed_timestamp)
-                ),
-                status=status_processor(status),
+                id=id,
+                barcode=barcode,
+                created_timestamp=timestamp_to_datetime(created_timestamp),
+                completed_timestamp=timestamp_to_datetime(completed_timestamp),
+                status=status,
             )
 
 
