@@ -46,13 +46,10 @@ async def main(services, **kwargs):
 @click.argument("services", nargs=-1, type=click.Choice(tuple(SERVICES.keys())))
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def start(services, **opts):
-    # If no services specified, start all available services
-    if not services:
 
-        services = set(SERVICES.keys())
+    services = set(services or SERVICES.keys())
 
-        if is_mac:
-            # On Mac, exclude listener by default
-            services.remove("listener")
+    if is_mac:
+        services.remove("listener")
 
     asyncio.run(main(services, **opts))
