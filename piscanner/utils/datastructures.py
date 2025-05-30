@@ -4,9 +4,7 @@ class data(dict):
             return self.__getitem__(attr)
         except KeyError:
             raise AttributeError(
-                "'{}' object has no attribute '{}'".format(
-                    self.__class__.__name__, attr
-                )
+                f"'{self.__class__.__name__}' object has no attribute '{attr}'"
             )
 
     def __setattr__(self, attr, value):

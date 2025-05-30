@@ -71,7 +71,7 @@ async def print_events(device, verbose=False):
 def codes():
     # Letters (lowercase)
     for c in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-        yield ecodes["KEY_{}".format(c)], c.lower()
+        yield ecodes[f"KEY_{c}"], c.lower()
 
     # Common punctuation that might appear in barcodes
     punctuation_map = {
@@ -97,7 +97,7 @@ def codes():
 def shifted_codes():
     # Letters (uppercase when shifted)
     for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-        yield ecodes["KEY_{}".format(c)], c.upper()
+        yield ecodes[f"KEY_{c}"], c.upper()
 
     # Numbers become symbols when shifted
     number_symbols = {
@@ -138,14 +138,14 @@ def shifted_codes():
 
 def listener_coroutines(*args, **opts):
 
-    print("⌨️ Starting on machine {}".format(get_hostname()))
+    print(f"⌨️ Starting on machine {get_hostname()}")
 
     sys.stdout.flush()
 
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 
     if len(devices) == 0:
-        warnings.warn("No devices found")
+        warnings.warn("No devices found", stacklevel=2)
 
     for device in devices:
         yield print_events, args, {"device": device, **opts}

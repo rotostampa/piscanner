@@ -34,7 +34,7 @@ async def handle_remote_barcodes(barcodes, verbose):
 
     hostname = get_hostname()
 
-    url = "{URL}".format(URL=settings.URL)
+    url = f"{settings.URL}"
 
     # Build form data
     form_data = [
@@ -64,7 +64,7 @@ async def handle_remote_barcodes(barcodes, verbose):
                 data=form_data,
                 headers=(
                     {
-                        "Authorization": "Bearer {TOKEN}".format(TOKEN=settings.TOKEN),
+                        "Authorization": f"Bearer {settings.TOKEN}",
                     }
                     if settings.TOKEN
                     else None
@@ -89,7 +89,7 @@ async def handle_remote_barcodes(barcodes, verbose):
                 ensure_future(flash_red())
 
                 return {
-                    info.barcode: status or "HTTPError{}".format(response.status)
+                    info.barcode: status or f"HTTPError{response.status}"
                     for info in barcodes
                 }
         except (
@@ -116,9 +116,9 @@ async def handle_settings_barcodes(barcodes, verbose=False, **opts):
         parsed = urlparse(info.barcode)
 
         if (
-            not parsed.scheme == "piscanner"
-            and not parsed.path == ""
-            and not parsed.netloc == "settings"
+            parsed.scheme != "piscanner"
+            and parsed.path != ""
+            and parsed.netloc != "settings"
         ):
             result[info.barcode] = "InvalidBarcode"
 

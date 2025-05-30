@@ -31,7 +31,7 @@ async def populate_initial_data(barcodes):
             await log_insert(barcode("44"))
 
         for i in range(3):
-            await log_insert(barcode(prefix="4{}".format(i)))
+            await log_insert(barcode(prefix=f"4{i}"))
 
         await log_insert(barcode(prefix="invalid"))
         await log_insert(barcode(prefix="invalid"))

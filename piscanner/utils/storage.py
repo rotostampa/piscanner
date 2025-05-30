@@ -27,14 +27,13 @@ async def db_transaction(path=DB_FILE, lock=asyncio.Lock()):
         async with db_transaction() as db:
             await db.execute("INSERT INTO table VALUES (?)", (value,))
     """
-    async with lock:
-        async with db_readonly(path=path) as db:
-            try:
-                yield db
-                await db.commit()
-            except Exception as e:
-                await db.rollback()
-                raise e
+    async with lock, db_readonly(path=path) as db:
+        try:
+            yield db
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            raise e
 
 
 @asynccontextmanager

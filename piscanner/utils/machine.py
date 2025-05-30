@@ -22,4 +22,4 @@ def get_local_hostname():
     if hostname.endswith(".local") or is_ipv4(hostname):
         return hostname
     else:
-        return "{}.local".format(hostname)
+        return f"{hostname}.local"

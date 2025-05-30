@@ -34,9 +34,8 @@ def format_value(key, value):
         return "".join(repeat("&bull;", 8))
     if key == "INSECURE":
         return bool(value) and "&#x2713;" or "&mdash;"
-    if key == "URL" and value:
-        if netloc := urlparse(value).netloc or value:
-            return f"<a target='_blank' href='{value}'>{netloc}</a>"
+    if key == "URL" and value and (netloc := urlparse(value).netloc or value):
+        return f"<a target='_blank' href='{value}'>{netloc}</a>"
     return value or "&mdash;"
 
 
@@ -101,7 +100,7 @@ async def start_server(address="0.0.0.0", port=9999, verbose=False):
     site = web.TCPSite(runner, address, port)
     await site.start()
 
-    print("🤖 Serving on http://{}:{}...".format(get_local_hostname(), port))
+    print(f"🤖 Serving on http://{get_local_hostname()}:{port}...")
 
     while True:
         await asyncio.sleep(3600)
