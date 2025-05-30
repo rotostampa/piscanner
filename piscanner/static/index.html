@@ -6,7 +6,7 @@
         <title>Loading...</title>
         <link
             rel="stylesheet"
-            href="https://esm.sh/@picocss/pico@2/css/pico.min.css"
+            href="https://esm.sh/@picocss/pico@2.1.1/css/pico.min.css"
         />
         <link
             rel="stylesheet"
@@ -50,8 +50,6 @@
 
                 return classes.join(" ");
             }
-
-
 
             function ErrorMessage({ error, onRetry }) {
                 return h(
@@ -212,8 +210,6 @@
                             data.hostname || "PiScanner",
                         ),
                     ),
-
-
 
                     error && !data.hostname
                         ? h(ErrorMessage, { error, onRetry: handleRetry })
