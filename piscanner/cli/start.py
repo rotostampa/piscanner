@@ -9,22 +9,20 @@ from piscanner.utils.machine import is_mac
 from piscanner.utils.lights import setup_gpio, cleanup_gpio
 
 
-def yield_coroutines(server, listener, sender, lights, cleanup):
-    for module, cmd, check in (
-        ("piscanner.core.listener", "listener_coroutines", listener and not is_mac),
-        ("piscanner.core.server", "server_coroutines", server),
-        ("piscanner.core.sender", "sender_coroutines", sender),
-        ("piscanner.core.lights", "lights_coroutines", lights),
-        ("piscanner.core.cleanup", "cleanup_coroutines", cleanup),
-    ):
-        if check:
-            func = getattr(import_module(module), cmd)
-            yield from func()
-        else:
-            print(
-                "⚠️ Warning {}.{} won't run on your system".format(module, cmd),
-                file=sys.stderr,
-            )
+SERVICES = {
+    'listener': ("piscanner.core.listener", "listener_coroutines"),
+    'server': ("piscanner.core.server", "server_coroutines"),
+    'lights': ("piscanner.core.lights", "lights_coroutines"),
+    'cleanup': ("piscanner.core.cleanup", "cleanup_coroutines"),
+}
+
+def yield_coroutines(services):
+    for service in services:
+        module_name, cmd = SERVICES[service]
+
+        func = getattr(import_module(module_name), cmd)
+
+        yield from func()
 
 
 async def restart_on_failure(coroutine_func, *args, **kwargs):
@@ -44,7 +42,7 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 
-async def main(server, listener, sender, lights, cleanup, **kwargs):
+async def main(services, **kwargs):
 
     setup_gpio()
 
@@ -54,9 +52,7 @@ async def main(server, listener, sender, lights, cleanup, **kwargs):
 
     await init()
 
-    for coroutine, args, opts in yield_coroutines(
-        server, listener, sender, lights, cleanup
-    ):
+    for coroutine, args, opts in yield_coroutines(services):
         asyncio.create_task(restart_on_failure(coroutine, *args, **opts, **kwargs))
 
     try:
@@ -67,12 +63,17 @@ async def main(server, listener, sender, lights, cleanup, **kwargs):
         cleanup_gpio()
 
 
-@click.command(help="Listen for barcode scanner")
-@click.option("--listener/--no-listener", default=True, help="Enable/disable listener")
-@click.option("--server/--no-server", default=True, help="Enable/disable server")
-@click.option("--sender/--no-sender", default=True, help="Enable/disable sender")
-@click.option("--lights/--no-lights", default=True, help="Enable/disable lights")
-@click.option("--cleanup/--no-cleanup", default=True, help="Enable/disable cleanup")
+@click.command(help="Start PiScanner services")
+@click.argument('services', nargs=-1, type=click.Choice(tuple(SERVICES.keys())))
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def start(**opts):
-    asyncio.run(main(**opts))
+def start(services, **opts):
+    # If no services specified, start all available services
+    if not services:
+
+        services = set(SERVICES.keys())
+
+        if is_mac:
+            # On Mac, exclude listener by default
+            services.remove('listener')
+
+    asyncio.run(main(services, **opts))
