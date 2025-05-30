@@ -12,8 +12,7 @@ from piscanner.utils.lights import setup_gpio, cleanup_gpio
 SERVICES = {
     "listener": ("piscanner.core.listener", "listener_coroutines"),
     "server": ("piscanner.core.server", "server_coroutines"),
-    "lights": ("piscanner.core.lights", "lights_coroutines"),
-    "cleanup": ("piscanner.core.cleanup", "cleanup_coroutines"),
+    "worker": ("piscanner.core.worker", "worker_coroutines"),
 }
 
 
@@ -36,32 +35,18 @@ async def restart_on_failure(coroutine_func, *args, **kwargs):
             await asyncio.sleep(1)
 
 
-def signal_handler(sig, frame):
-    """Handle signals like SIGINT (Ctrl+C) by cleaning up GPIO first"""
-    print("Cleaning up GPIO and exiting...")
-    cleanup_gpio()
-    sys.exit(0)
 
 
 async def main(services, **kwargs):
 
-    setup_gpio()
 
-    # Register signal handlers
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
 
     await init()
 
     for coroutine, args, opts in yield_coroutines(services):
         asyncio.create_task(restart_on_failure(coroutine, *args, **opts, **kwargs))
 
-    try:
-        # Run forever
-        await asyncio.Event().wait()
-    finally:
-        # Ensure cleanup even if the event loop is stopped
-        cleanup_gpio()
+    await asyncio.Event().wait()
 
 
 @click.command(help="Start PiScanner services")
