@@ -13,15 +13,7 @@
             href="https://esm.sh/nprogress@0.2.0/nprogress.css"
         />
         <script type="module">
-            import {
-                render,
-                h,
-                Component,
-            } from "https://esm.sh/preact@10.19.3";
-            import {
-                useState,
-                useEffect,
-            } from "https://esm.sh/preact@10.19.3/hooks";
+            import { LitElement, html, css } from "https://esm.sh/lit@3.3.0";
             import NProgress from "https://esm.sh/nprogress@0.2.0";
 
             const API_ENDPOINT = "/refresh/";
@@ -51,108 +43,154 @@
                 return classes.join(" ");
             }
 
-            function ErrorMessage({ error, onRetry }) {
-                return h(
-                    "div",
-                    { className: "error" },
-                    h("p", null, "Error loading data: ", error),
-                    h(
-                        "button",
-                        { className: "secondary", onClick: onRetry },
-                        "Retry",
-                    ),
-                );
+            class BarcodeCard extends LitElement {
+                static properties = {
+                    barcode: { type: Object },
+                };
+
+                render() {
+                    const { barcode } = this;
+                    return html`
+                        <article class="${getBarcodeCardClass(barcode)}">
+                            <dl class="card-content">
+                                <dt>#${barcode.id}</dt>
+                                <dd title="${barcode.barcode}">
+                                    ${truncate(barcode.barcode, 21)}
+                                </dd>
+                                <dt>Status</dt>
+                                <dd>${barcode.status}</dd>
+                                <dt>Processed</dt>
+                                <dd
+                                    .innerHTML="${barcode.completed_timestamp ||
+                                    barcode.created_timestamp}"
+                                ></dd>
+                            </dl>
+                        </article>
+                    `;
+                }
+
+                createRenderRoot() {
+                    return this;
+                }
             }
 
-            function BarcodeCard({ barcode }) {
-                return h(
-                    "article",
-                    { className: getBarcodeCardClass(barcode) },
-                    h(
-                        "dl",
-                        { className: "card-content" },
-                        h("dt", null, `#${barcode.id}`),
-                        h(
-                            "dd",
-                            { title: barcode.barcode },
-                            truncate(barcode.barcode, 21),
-                        ),
-                        h("dt", null, "Status"),
-                        h("dd", null, barcode.status),
-                        h("dt", null, "Processed"),
-                        h("dd", {
-                            dangerouslySetInnerHTML: {
-                                __html:
-                                    barcode.completed_timestamp ||
-                                    barcode.created_timestamp,
-                            },
-                        }),
-                    ),
-                );
+            class SettingsCard extends LitElement {
+                static properties = {
+                    settings: { type: Object },
+                };
+
+                render() {
+                    const settingsEntries = Object.entries(this.settings || {});
+
+                    return html`
+                        <article>
+                            <header style="text-align: center;">
+                                Settings
+                            </header>
+                            <dl class="card-content">
+                                ${settingsEntries.map(
+                                    ([key, value]) => html`
+                                        <dt>${key}</dt>
+                                        <dd .innerHTML="${value}"></dd>
+                                    `,
+                                )}
+                            </dl>
+                        </article>
+                    `;
+                }
+
+                createRenderRoot() {
+                    return this;
+                }
             }
 
-            function SettingsCard({ settings }) {
-                const settingsEntries = Object.entries(settings || {});
+            class ErrorMessage extends LitElement {
+                static properties = {
+                    error: { type: String },
+                    onRetry: { type: Function },
+                };
 
-                return h(
-                    "article",
-                    null,
-                    h("header", { style: { textAlign: "center" } }, "Settings"),
-                    h(
-                        "dl",
-                        { className: "card-content" },
-                        ...settingsEntries
-                            .map(([key, value]) => [
-                                h("dt", { key: `${key}-label` }, key),
-                                h("dd", {
-                                    key: `${key}-value`,
-                                    dangerouslySetInnerHTML: { __html: value },
-                                }),
-                            ])
-                            .flat(),
-                    ),
-                );
+                render() {
+                    return html`
+                        <div class="error">
+                            <p>Error loading data: ${this.error}</p>
+                            <button class="secondary" @click="${this.onRetry}">
+                                Retry
+                            </button>
+                        </div>
+                    `;
+                }
+
+                createRenderRoot() {
+                    return this;
+                }
             }
 
-            function MainContent({ data }) {
-                return h(
-                    "div",
-                    null,
-                    h(
-                        "div",
-                        { className: "barcode-grid" },
-                        ...(data.barcodes || []).map((barcode) =>
-                            h(BarcodeCard, { key: barcode.id, barcode }),
-                        ),
-                    ),
-                    h("div", { style: { margin: "20px 0" } }),
-                    h(
-                        "div",
-                        { className: "barcode-grid" },
-                        h(SettingsCard, { settings: data.settings }),
-                    ),
-                    h(
-                        "footer",
-                        {
-                            style: {
-                                textAlign: "center",
-                                color: "var(--pico-muted-color)",
-                                marginTop: "2rem",
-                            },
-                        },
-                        "Made with ❤️ by Rotostampa",
-                    ),
-                );
+            class MainContent extends LitElement {
+                static properties = {
+                    data: { type: Object },
+                };
+
+                render() {
+                    return html`
+                        <div>
+                            <div class="barcode-grid">
+                                ${(this.data.barcodes || []).map(
+                                    (barcode) =>
+                                        html`<barcode-card
+                                            .barcode="${barcode}"
+                                        ></barcode-card>`,
+                                )}
+                            </div>
+                            <div style="margin: 20px 0;"></div>
+                            <div class="barcode-grid">
+                                <settings-card
+                                    .settings="${this.data.settings}"
+                                ></settings-card>
+                            </div>
+                            <footer
+                                style="text-align: center; color: var(--pico-muted-color); margin-top: 2rem;"
+                            >
+                                Made with ❤️ by Rotostampa
+                            </footer>
+                        </div>
+                    `;
+                }
+
+                createRenderRoot() {
+                    return this;
+                }
             }
 
-            function App() {
-                const [data, setData] = useState({});
-                const [loading, setLoading] = useState(false);
-                const [error, setError] = useState(null);
+            class App extends LitElement {
+                static properties = {
+                    data: { state: true },
+                    loading: { state: true },
+                    error: { state: true },
+                };
 
-                const fetchData = async () => {
+                constructor() {
+                    super();
+                    this.data = {};
+                    this.loading = false;
+                    this.error = null;
+                    this.fetchData();
+                    this.interval = setInterval(
+                        () => this.fetchData(),
+                        REFRESH_INTERVAL,
+                    );
+                }
+
+                disconnectedCallback() {
+                    super.disconnectedCallback();
+                    if (this.interval) {
+                        clearInterval(this.interval);
+                    }
+                }
+
+                async fetchData() {
                     try {
-                        setError(null);
+                        this.error = null;
                         NProgress.start();
 
                         const response = await fetch(API_ENDPOINT);
@@ -163,64 +201,64 @@
                         }
 
                         const newData = await response.json();
-                        setData(newData);
+                        this.data = newData;
 
                         // Update page title
-                        if (newData.hostname?.hostname) {
-                            document.title = newData.hostname.hostname;
+                        if (newData.hostname) {
+                            document.title = newData.hostname;
                         }
 
-                        setError(null);
+                        this.error = null;
                         NProgress.done();
                     } catch (err) {
-                        setError(err.message);
+                        this.error = err.message;
                         NProgress.done();
                         console.error("Failed to fetch data:", err);
                     }
-                };
+                }
 
-                const handleRetry = () => {
-                    fetchData();
-                };
+                handleRetry() {
+                    this.fetchData();
+                }
 
-                useEffect(() => {
-                    fetchData();
+                render() {
+                    return html`
+                        <div class="container">
+                            <br />
+                            <div class="header-title">
+                                <h1>
+                                    <span .innerHTML="&#129302;"></span>
+                                    ${this.data.hostname || "PiScanner"}
+                                </h1>
+                            </div>
 
-                    const interval = setInterval(fetchData, REFRESH_INTERVAL);
+                            ${this.error && !this.data.hostname
+                                ? html`<error-message
+                                      .error="${this.error}"
+                                      .onRetry="${() => this.handleRetry()}"
+                                  ></error-message>`
+                                : null}
+                            ${this.data.hostname
+                                ? html`<main-content
+                                      .data="${this.data}"
+                                  ></main-content>`
+                                : null}
 
-                    return () => clearInterval(interval);
-                }, []);
+                            <br />
+                        </div>
+                    `;
+                }
 
-                return h(
-                    "div",
-                    { className: "container" },
-                    h("br"),
-                    h(
-                        "div",
-                        { className: "header-title" },
-                        h(
-                            "h1",
-                            null,
-                            h("span", {
-                                dangerouslySetInnerHTML: {
-                                    __html: "&#129302;",
-                                },
-                            }),
-                            " ",
-                            data.hostname || "PiScanner",
-                        ),
-                    ),
-
-                    error && !data.hostname
-                        ? h(ErrorMessage, { error, onRetry: handleRetry })
-                        : null,
-                    data.hostname ? h(MainContent, { data }) : null,
-
-                    h("br"),
-                );
+                createRenderRoot() {
+                    return this;
+                }
             }
 
-            render(h(App), document.body);
+            customElements.define("barcode-card", BarcodeCard);
+            customElements.define("settings-card", SettingsCard);
+            customElements.define("error-message", ErrorMessage);
+            customElements.define("main-content", MainContent);
+            customElements.define("pi-scanner-app", App);
         </script>
         <style>
             /* Hide scrollbars for all browsers */
@@ -353,5 +391,7 @@
             }
         </style>
     </head>
-    <body></body>
+    <body>
+        <pi-scanner-app></pi-scanner-app>
+    </body>
 </html>
