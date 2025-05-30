@@ -14,6 +14,8 @@
         />
         <script type="module">
             import { LitElement, html, css } from "https://esm.sh/lit@3.3.0";
+            import { repeat } from "https://esm.sh/lit@3.3.0/directives/repeat.js";
+
             import NProgress from "https://esm.sh/nprogress@0.2.0";
 
             const API_ENDPOINT = "/refresh/";
@@ -88,7 +90,9 @@
                                 Settings
                             </header>
                             <dl class="card-content">
-                                ${settingsEntries.map(
+                                ${repeat(
+                                    settingsEntries,
+                                    ([key]) => key,
                                     ([key, value]) => html`
                                         <dt>${key}</dt>
                                         <dd .innerHTML="${value}"></dd>
@@ -135,7 +139,9 @@
                     return html`
                         <div>
                             <div class="barcode-grid">
-                                ${(this.data.barcodes || []).map(
+                                ${repeat(
+                                    this.data.barcodes || [],
+                                    (barcode) => barcode.id,
                                     (barcode) =>
                                         html`<barcode-card
                                             .barcode="${barcode}"
