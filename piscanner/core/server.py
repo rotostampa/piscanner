@@ -80,7 +80,7 @@ async def start_server(address="0.0.0.0", port=9999, verbose=False):
     app = web.Application()
 
     static_path = os.path.abspath(
-        os.path.join(os.path.dirname(piscanner.__file__), "..", "static")
+        os.path.join(os.path.dirname(piscanner.__file__), "static")
     )
 
     # Serve Preact app for main route
