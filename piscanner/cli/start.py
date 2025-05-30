@@ -10,11 +10,12 @@ from piscanner.utils.lights import setup_gpio, cleanup_gpio
 
 
 SERVICES = {
-    'listener': ("piscanner.core.listener", "listener_coroutines"),
-    'server': ("piscanner.core.server", "server_coroutines"),
-    'lights': ("piscanner.core.lights", "lights_coroutines"),
-    'cleanup': ("piscanner.core.cleanup", "cleanup_coroutines"),
+    "listener": ("piscanner.core.listener", "listener_coroutines"),
+    "server": ("piscanner.core.server", "server_coroutines"),
+    "lights": ("piscanner.core.lights", "lights_coroutines"),
+    "cleanup": ("piscanner.core.cleanup", "cleanup_coroutines"),
 }
+
 
 def yield_coroutines(services):
     for service in services:
@@ -64,7 +65,7 @@ async def main(services, **kwargs):
 
 
 @click.command(help="Start PiScanner services")
-@click.argument('services', nargs=-1, type=click.Choice(tuple(SERVICES.keys())))
+@click.argument("services", nargs=-1, type=click.Choice(tuple(SERVICES.keys())))
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def start(services, **opts):
     # If no services specified, start all available services
@@ -74,6 +75,6 @@ def start(services, **opts):
 
         if is_mac:
             # On Mac, exclude listener by default
-            services.remove('listener')
+            services.remove("listener")
 
     asyncio.run(main(services, **opts))

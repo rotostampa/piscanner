@@ -1,4 +1,3 @@
-from piscanner.utils.functions import identity
 import aiosqlite
 import datetime
 import asyncio
