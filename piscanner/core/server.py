@@ -41,12 +41,6 @@ def format_value(key, value):
 
 # Add JSON refresh endpoint
 async def refresh_data(request):
-    # Collect hostname data
-    hostname_data = {
-        "hostname": get_hostname(),
-        "time": datetime.datetime.now().time().strftime("%H:%M:%S"),
-        "year": datetime.date.today().year,
-    }
 
     # Collect settings data
     settings = await get_settings()
@@ -70,7 +64,7 @@ async def refresh_data(request):
 
     return web.json_response(
         {
-            "hostname": hostname_data,
+            "hostname": get_hostname(),
             "settings": settings_data,
             "barcodes": barcodes_data,
         }

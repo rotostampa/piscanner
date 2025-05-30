@@ -8,6 +8,10 @@
             rel="stylesheet"
             href="https://esm.sh/@picocss/pico@2/css/pico.min.css"
         />
+        <link
+            rel="stylesheet"
+            href="https://esm.sh/nprogress@0.2.0/nprogress.css"
+        />
         <script type="module">
             import {
                 render,
@@ -18,6 +22,7 @@
                 useState,
                 useEffect,
             } from "https://esm.sh/preact@10.19.3/hooks";
+            import NProgress from "https://esm.sh/nprogress@0.2.0";
 
             const API_ENDPOINT = "/refresh/";
             const REFRESH_INTERVAL = 3000;
@@ -46,13 +51,7 @@
                 return classes.join(" ");
             }
 
-            function LoadingSpinner() {
-                return h(
-                    "div",
-                    { className: "loading" },
-                    h("p", { "aria-busy": "true" }, "Loading data..."),
-                );
-            }
+
 
             function ErrorMessage({ error, onRetry }) {
                 return h(
@@ -150,12 +149,13 @@
 
             function App() {
                 const [data, setData] = useState({});
-                const [loading, setLoading] = useState(true);
+                const [loading, setLoading] = useState(false);
                 const [error, setError] = useState(null);
 
                 const fetchData = async () => {
                     try {
-                        if (loading) setError(null);
+                        setError(null);
+                        NProgress.start();
 
                         const response = await fetch(API_ENDPOINT);
                         if (!response.ok) {
@@ -165,30 +165,23 @@
                         }
 
                         const newData = await response.json();
+                        setData(newData);
 
-                        // Only update state if data actually changed
-                        const dataChanged =
-                            JSON.stringify(newData) !== JSON.stringify(data);
-                        if (dataChanged || loading) {
-                            setData(newData);
-
-                            // Update page title
-                            if (newData.hostname?.hostname) {
-                                document.title = newData.hostname.hostname;
-                            }
+                        // Update page title
+                        if (newData.hostname?.hostname) {
+                            document.title = newData.hostname.hostname;
                         }
 
-                        if (loading) setLoading(false);
-                        if (error) setError(null);
+                        setError(null);
+                        NProgress.done();
                     } catch (err) {
                         setError(err.message);
-                        if (loading) setLoading(false);
+                        NProgress.done();
                         console.error("Failed to fetch data:", err);
                     }
                 };
 
                 const handleRetry = () => {
-                    setLoading(true);
                     fetchData();
                 };
 
@@ -216,17 +209,12 @@
                                 },
                             }),
                             " ",
-                            data.hostname?.hostname || "PiScanner",
-                        ),
-                        h(
-                            "small",
-                            { className: "last-updated" },
-                            "Last updated → ",
-                            data.hostname?.time || "--:--:--",
+                            data.hostname || "PiScanner",
                         ),
                     ),
 
-                    loading && !data.hostname ? h(LoadingSpinner) : null,
+
+
                     error && !data.hostname
                         ? h(ErrorMessage, { error, onRetry: handleRetry })
                         : null,
@@ -260,19 +248,13 @@
                 justify-content: center;
                 text-align: center;
             }
-            .last-updated {
-                color: var(--pico-muted-color);
-                font-size: 10px;
-            }
+
             @media (max-width: 767px) {
                 .header-title {
                     flex-direction: column;
                     align-items: center;
                     gap: 0.25rem;
                     margin-bottom: 1.5rem;
-                }
-                .last-updated {
-                    font-size: 12px;
                 }
             }
             .barcode-grid {
@@ -367,11 +349,7 @@
                     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
                 }
             }
-            .loading {
-                text-align: center;
-                padding: 2rem;
-                color: var(--pico-muted-color);
-            }
+
             .error {
                 text-align: center;
                 padding: 2rem;
