@@ -2,6 +2,7 @@ from importlib import import_module
 import traceback
 import asyncio
 import click
+import contextlib
 from piscanner.utils.storage import init
 from piscanner.utils.machine import is_mac
 
@@ -36,8 +37,8 @@ async def main(services, **kwargs):
 
     await init()
 
-    for coroutine, args, opts in yield_coroutines(services):
-        asyncio.create_task(restart_on_failure(coroutine, *args, **opts, **kwargs))
+    for func, args, opts in yield_coroutines(services):
+        asyncio.create_task(restart_on_failure(func, *args, **opts, **kwargs))
 
     await asyncio.Event().wait()
 
@@ -50,6 +51,7 @@ def start(services, **opts):
     services = set(services or SERVICES.keys())
 
     if is_mac:
-        services.remove("listener")
+        with contextlib.suppress(KeyError):
+            services.remove("listener")
 
     asyncio.run(main(services, **opts))
