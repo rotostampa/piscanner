@@ -3,9 +3,9 @@ import datetime
 import os
 from itertools import repeat
 from urllib.parse import urlparse
-
+import sys
 from aiohttp import web
-
+import logging
 import piscanner
 from piscanner.utils.machine import get_hostname, get_local_hostname
 from piscanner.utils.storage import get_settings, read
@@ -72,6 +72,16 @@ async def refresh_data(request):
 
 
 async def start_server(address="0.0.0.0", port=9999, verbose=False):
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        stream=sys.stderr,
+    )
+
+    # Enable access logging
+    logging.getLogger("aiohttp.access").setLevel(logging.INFO)
+
     app = web.Application()
 
     static_path = os.path.abspath(
