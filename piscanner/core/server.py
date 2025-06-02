@@ -78,12 +78,16 @@ async def start_server(address="0.0.0.0", port=9999, verbose=False):
         os.path.join(os.path.dirname(piscanner.__file__), "static")
     )
 
+    logs_path = os.path.expanduser("~/logs")
+
     # Serve Preact app for main route
     async def serve_main_app(request):
         return web.FileResponse(os.path.join(static_path, "index.html"))
 
     app.router.add_get("/", serve_main_app)
     app.router.add_get("/refresh/", refresh_data)
+
+    app.router.add_static('/logs/', logs_path, name='logs', show_index=True)
 
     # Add static file serving for /static/ route
     # app.router.add_static('/static/', static_path, name='static')
