@@ -1,11 +1,13 @@
 import asyncio
 import datetime
+import logging
 import os
+import sys
 from itertools import repeat
 from urllib.parse import urlparse
-import sys
+
 from aiohttp import web
-import logging
+
 import piscanner
 from piscanner.utils.machine import get_hostname, get_local_hostname
 from piscanner.utils.storage import get_settings, read
