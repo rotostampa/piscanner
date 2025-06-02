@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import logging
 import os
 from itertools import repeat
 from urllib.parse import urlparse
@@ -40,16 +39,6 @@ def format_value(key, value):
     return value or "&mdash;"
 
 
-# Request logging middleware
-async def logging_middleware(request, handler):
-    response = await handler(request)
-
-    # Log the request details
-    logging.info(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {request.method} {request.path_qs} - {response.status}")
-
-    return response
-
-
 # Add JSON refresh endpoint
 async def refresh_data(request):
 
@@ -83,13 +72,7 @@ async def refresh_data(request):
 
 
 async def start_server(address="0.0.0.0", port=9999, verbose=False):
-    # Configure logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(message)s'
-    )
-
-    app = web.Application(middlewares=[logging_middleware])
+    app = web.Application()
 
     static_path = os.path.abspath(
         os.path.join(os.path.dirname(piscanner.__file__), "static")
