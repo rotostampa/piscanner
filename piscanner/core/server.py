@@ -75,7 +75,6 @@ async def start_server(address="0.0.0.0", port=9999, verbose=False):
 
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         stream=sys.stderr,
     )
 
