@@ -98,7 +98,8 @@ async def start_server(address="0.0.0.0", port=9999, verbose=False):
     app.router.add_get("/", serve_main_app)
     app.router.add_get("/refresh/", refresh_data)
 
-    app.router.add_static('/logs/', logs_path, name='logs', show_index=True)
+    if os.path.exists(logs_path):
+        app.router.add_static('/logs/', logs_path, name='logs', show_index=True)
 
     # Add static file serving for /static/ route
     # app.router.add_static('/static/', static_path, name='static')
