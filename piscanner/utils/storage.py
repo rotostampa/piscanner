@@ -214,26 +214,6 @@ async def set_status_mapping(status_to_ids_mapping):
     return total_records
 
 
-async def get_latest_timestamp():
-    """
-    Get the most recent barcode based on completed_timestamp.
-
-    Returns:
-        datetime: Datetime of the most recent completed barcode or None if no completed barcodes exist
-    """
-    async with db_readonly() as db:
-        cursor = await db.execute(
-            """
-            SELECT MAX(completed_timestamp) as latest_timestamp
-            FROM barcodes
-            WHERE completed_timestamp IS NOT NULL
-            """
-        )
-
-        row = await cursor.fetchone()
-        if row:
-            return timestamp_to_datetime(row[0])
-        return None
 
 
 async def get_settings():

@@ -2,26 +2,33 @@ import asyncio
 import datetime
 
 from piscanner.utils.lights import flash_green, flash_red, flash_yellow
-from piscanner.utils.storage import get_latest_timestamp
+from piscanner.utils.storage import read
+from piscanner.core.server import is_success, is_recent
 
 
-async def start_lights(check_seconds=5, wait_timout=5, verbose=False):
+async def start_lights(check_seconds=1, wait_timout=1, verbose=False):
     while True:
         # Get the latest timestamp
-        latest_timestamp = await get_latest_timestamp()
+        #
+        #
+        print('CIAO')
 
-        if not latest_timestamp or latest_timestamp <= (
-            datetime.datetime.now(datetime.UTC)
-            - datetime.timedelta(seconds=check_seconds)
-        ):
-            if verbose:
-                print("💡 flashing status lights")
+        record = None
 
+        async for record in read(limit=1):
+            pass
 
-            await flash_yellow(wait=0, duration=0.5)
+        if record:
 
-        elif verbose:
-            print("💡 not flashing ")
+            if not record.completed_timestamp:
+                await flash_yellow()
+
+            if is_success(record.status):
+                await flash_green()
+            else:
+                await flash_red()
+        else:
+            await flash_yellow()
 
         # Wait before checking again
         await asyncio.sleep(wait_timout)
