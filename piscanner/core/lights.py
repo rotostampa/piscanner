@@ -8,10 +8,6 @@ from piscanner.core.server import is_success, is_recent
 
 async def start_lights(check_seconds=1, wait_timout=1, verbose=False):
     while True:
-        # Get the latest timestamp
-        #
-        #
-        print('CIAO')
 
         record = None
 
