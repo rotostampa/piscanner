@@ -5,7 +5,6 @@ from asyncio.tasks import ensure_future
 import evdev
 from evdev.ecodes import ecodes
 
-from piscanner.utils.lights import flash_yellow
 from piscanner.utils.machine import get_hostname
 from piscanner.utils.storage import insert_barcode
 
@@ -54,7 +53,6 @@ async def print_events(device, verbose=False):
                         if verbose:
                             print("⌨️ ", buffer.strip())
                         ensure_future(insert_barcode(buffer.strip()))
-                        ensure_future(flash_yellow())
 
                     buffer = ""
                 else:
